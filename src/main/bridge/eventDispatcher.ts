@@ -1,6 +1,10 @@
 import type { BrowserWindow } from "electron"
 import type { PetEvent } from "../../shared/types"
-import { dispatchPetEvent, getNextEventId } from "../ipc/handlers"
+import {
+  broadcastSnapshot,
+  dispatchPetEventWithResult,
+  type DispatchPetEventResult
+} from "../ipc/handlers"
 
 export interface EventDispatcherOptions {
   getDebugWindow: () => BrowserWindow | null
@@ -11,8 +15,10 @@ export interface EventDispatcherOptions {
 export function dispatchBridgeEvent(
   options: EventDispatcherOptions,
   event: PetEvent
-): string {
-  const eventId = getNextEventId()
-  dispatchPetEvent(options, event)
-  return eventId
+): DispatchPetEventResult {
+  return dispatchPetEventWithResult(options, event)
+}
+
+export function broadcastBridgeSnapshot(options: EventDispatcherOptions): void {
+  broadcastSnapshot(options)
 }

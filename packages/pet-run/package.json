@@ -1,0 +1,10 @@
+{
+  "name": "@tinkerpet/pet-run",
+  "version": "0.2.0",
+  "description": "Run a local command and report workflow status to the TinkerPet desktop bridge.",
+  "type": "module",
+  "bin": {
+    "pet-run": "./bin/pet-run.mjs"
+  },
+  "private": true
+}

@@ -10,6 +10,7 @@ interface TrayMenuOptions {
   getAlwaysOnTop: () => boolean
   getMousePassthrough: () => boolean
   openDebugWindow: () => BrowserWindow
+  openReportWindow: () => BrowserWindow
   getPetWindow: () => BrowserWindow | null
   showPetWindow: () => BrowserWindow
 }
@@ -53,9 +54,21 @@ function createContextMenu(options: TrayMenuOptions): Menu {
       }
     },
     {
+      label: "Open Settings",
+      click: () => {
+        options.openDebugWindow().show()
+      }
+    },
+    {
       label: "Open Debug Panel",
       click: () => {
         options.openDebugWindow().show()
+      }
+    },
+    {
+      label: "Open Daily Report",
+      click: () => {
+        options.openReportWindow().show()
       }
     },
     { type: "separator" },

@@ -7,10 +7,12 @@ import {
   transitionPetState,
   type PetMachineState
 } from "./petStateMachine"
+import { runAnimationManifestSelfCheck } from "./animationManifest"
 import { PetSprite } from "./components/PetSprite"
 import { StatusBubble } from "./components/StatusBubble"
 
-const SELF_CHECK_PASSED = runPetStateMachineSelfCheck()
+const SELF_CHECK_PASSED =
+  runPetStateMachineSelfCheck() && runAnimationManifestSelfCheck()
 
 export function PetApp(): React.ReactElement {
   const [machineState, setMachineState] = React.useState<PetMachineState>(

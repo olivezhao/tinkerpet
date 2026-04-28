@@ -18,7 +18,7 @@ function getDevRendererUrl(entry: string): string {
 export function createDebugWindow(): BrowserWindow {
   const debugWindow = new BrowserWindow({
     height: DEBUG_WINDOW_HEIGHT,
-    title: "TinkerPet Debug Panel",
+    title: "TinkerPet Settings",
     width: DEBUG_WINDOW_WIDTH,
     webPreferences: {
       preload: join(__dirname, "../preload/debugPreload.cjs"),

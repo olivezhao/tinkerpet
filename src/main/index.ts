@@ -6,9 +6,11 @@ import { loadConfig, updateConfig } from "./store/configStore"
 import { createTrayMenu } from "./tray/trayMenu"
 import { createDebugWindow } from "./windows/debugWindow"
 import { createPetWindow } from "./windows/petWindow"
+import { createReportWindow } from "./windows/reportWindow"
 
 let petWindow: BrowserWindow | null = null
 let debugWindow: BrowserWindow | null = null
+let reportWindow: BrowserWindow | null = null
 let bridgeServer: Server | null = null
 
 function showPetWindow(): BrowserWindow {
@@ -69,6 +71,21 @@ function getDebugWindow(): BrowserWindow | null {
   return debugWindow
 }
 
+function openReportWindow(): BrowserWindow {
+  if (reportWindow && !reportWindow.isDestroyed()) {
+    reportWindow.show()
+    reportWindow.focus()
+    return reportWindow
+  }
+
+  reportWindow = createReportWindow()
+  reportWindow.on("closed", () => {
+    reportWindow = null
+  })
+
+  return reportWindow
+}
+
 void app.whenReady().then(() => {
   loadConfig()
 
@@ -93,6 +110,7 @@ void app.whenReady().then(() => {
     getAlwaysOnTop: () => loadConfig().window.alwaysOnTop,
     getMousePassthrough: () => loadConfig().window.ignoreMouseEvents,
     openDebugWindow,
+    openReportWindow,
     getPetWindow,
     showPetWindow
   })

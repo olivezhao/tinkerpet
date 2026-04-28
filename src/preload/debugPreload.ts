@@ -1,16 +1,19 @@
 import { contextBridge, ipcRenderer } from "electron"
-import type { DebugSnapshot, PetEvent } from "../shared/types"
+import type { DebugSnapshot, PetEvent, PetProfile } from "../shared/types"
 
 const DEBUG_EVENT_LOG_CLEAR_CHANNEL = "debug:event-log-clear"
 const DEBUG_EVENT_SEND_CHANNEL = "debug:event-send"
 const DEBUG_SNAPSHOT_GET_CHANNEL = "debug:snapshot-get"
 const DEBUG_SNAPSHOT_UPDATED_CHANNEL = "debug:snapshot-updated"
+const PROFILE_GET_CHANNEL = "profile:get"
+const PROFILE_UPDATE_NAME_CHANNEL = "profile:update-name"
 
 contextBridge.exposeInMainWorld("tinkerpetDebug", {
   clearEventLog: (): Promise<DebugSnapshot> =>
     ipcRenderer.invoke(DEBUG_EVENT_LOG_CLEAR_CHANNEL),
   getSnapshot: (): Promise<DebugSnapshot> =>
     ipcRenderer.invoke(DEBUG_SNAPSHOT_GET_CHANNEL),
+  getProfile: (): Promise<PetProfile> => ipcRenderer.invoke(PROFILE_GET_CHANNEL),
   onSnapshotUpdated: (callback: (snapshot: DebugSnapshot) => void) => {
     const listener = (
       _ipcEvent: Electron.IpcRendererEvent,
@@ -26,5 +29,7 @@ contextBridge.exposeInMainWorld("tinkerpetDebug", {
     }
   },
   sendDebugEvent: (event: PetEvent): Promise<DebugSnapshot> =>
-    ipcRenderer.invoke(DEBUG_EVENT_SEND_CHANNEL, event)
+    ipcRenderer.invoke(DEBUG_EVENT_SEND_CHANNEL, event),
+  updatePetName: (petName: string): Promise<PetProfile> =>
+    ipcRenderer.invoke(PROFILE_UPDATE_NAME_CHANNEL, petName)
 })
