@@ -6,16 +6,24 @@ export interface AnimationConfig {
   name: string
 }
 
+const REQUIRED_V02_ANIMATIONS = new Set([
+  "fail-reboot",
+  "idle-breathe",
+  "sleep-powerdown",
+  "success-spark",
+  "working-tinker"
+])
+
 export const PET_ANIMATION_MANIFEST: Record<PetState, AnimationConfig> = {
   failed: {
-    durationMs: 900,
+    durationMs: 1100,
     loop: false,
-    name: "failed-drop"
+    name: "fail-reboot"
   },
   finished: {
-    durationMs: 900,
+    durationMs: 1000,
     loop: false,
-    name: "finished-hop"
+    name: "success-spark"
   },
   idle: {
     durationMs: 2400,
@@ -25,12 +33,21 @@ export const PET_ANIMATION_MANIFEST: Record<PetState, AnimationConfig> = {
   sleeping: {
     durationMs: 3600,
     loop: true,
-    name: "sleeping-dim"
+    name: "sleep-powerdown"
   },
   waiting: {
-    durationMs: 1200,
+    durationMs: 1300,
     loop: true,
-    name: "waiting-wiggle"
+    name: "working-tinker"
   }
 }
 
+export function runAnimationManifestSelfCheck(): boolean {
+  const animationNames = new Set(
+    Object.values(PET_ANIMATION_MANIFEST).map((animation) => animation.name)
+  )
+
+  return Array.from(REQUIRED_V02_ANIMATIONS).every((name) =>
+    animationNames.has(name)
+  )
+}

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TinkerPet Options</title>
+    <link rel="stylesheet" href="./options.css" />
+  </head>
+  <body>
+    <main class="options-shell">
+      <header>
+        <p class="eyebrow">TinkerPet Companion</p>
+        <h1>Connection</h1>
+      </header>
+
+      <section class="panel">
+        <label for="bridgeOrigin">Local Bridge</label>
+        <div class="form-row">
+          <input id="bridgeOrigin" spellcheck="false" />
+          <button id="saveButton" type="button">Save</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="status-row">
+          <div>
+            <h2>Desktop Status</h2>
+            <p id="statusText">Checking...</p>
+          </div>
+          <button id="refreshButton" type="button">Refresh</button>
+        </div>
+        <pre id="healthOutput" aria-live="polite"></pre>
+      </section>
+
+      <section class="panel">
+        <div class="status-row">
+          <div>
+            <h2>Detector Debug</h2>
+            <p class="muted">Latest local detector states.</p>
+          </div>
+          <button id="detectorRefreshButton" type="button">Refresh</button>
+        </div>
+        <pre id="detectorOutput" aria-live="polite"></pre>
+      </section>
+    </main>
+
+    <script type="module" src="./options.js"></script>
+  </body>
+</html>

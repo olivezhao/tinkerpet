@@ -15,7 +15,8 @@ export default defineConfig({
       rollupOptions: {
         input: {
           debugPreload: "src/preload/debugPreload.ts",
-          petPreload: "src/preload/petPreload.ts"
+          petPreload: "src/preload/petPreload.ts",
+          reportPreload: "src/preload/reportPreload.ts"
         },
         output: {
           chunkFileNames: "[name]-[hash].cjs",
@@ -35,7 +36,8 @@ export default defineConfig({
       rollupOptions: {
         input: {
           debug: resolve("src/renderer/debug.html"),
-          pet: resolve("src/renderer/index.html")
+          pet: resolve("src/renderer/index.html"),
+          report: resolve("src/renderer/report.html")
         }
       }
     },

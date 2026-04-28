@@ -1,0 +1,7 @@
+{
+  "name": "@tinkerpet/browser-extension",
+  "version": "0.2.0",
+  "description": "Chrome MV3 extension skeleton for sending AI task events to TinkerPet.",
+  "private": true,
+  "type": "module"
+}

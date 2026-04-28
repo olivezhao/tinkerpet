@@ -1,16 +1,33 @@
-import { BrowserWindow, ipcMain } from "electron"
-import type { DebugSnapshot, EventLogItem, PetEvent, PetState } from "../../shared/types"
+import { BrowserWindow, ipcMain, shell } from "electron"
+import type {
+  DebugSnapshot,
+  EventLogItem,
+  PetEvent,
+  PetState
+} from "../../shared/types"
+import { applyGrowthForEvent } from "../growth/growthEngine"
 import {
   appendEventLog as persistEventLogItem,
   clearEventLog,
   loadEventLog
 } from "../store/eventLogStore"
+import { loadTodayStats } from "../store/dailyStatsStore"
+import { loadProfile, updatePetName } from "../store/profileStore"
+import { loadSources, toPublicSource } from "../store/sourceStore"
 import { IPC_CHANNELS } from "./channels"
+import { generateDailyReportSummary } from "../report/dailyReportGenerator"
+import { generateShareCard } from "../share/shareCardGenerator"
 
 interface IpcHandlerOptions {
   getDebugWindow: () => BrowserWindow | null
   getPetWindow: () => BrowserWindow | null
   showPetWindow: () => BrowserWindow
+}
+
+export interface DispatchPetEventResult {
+  deduped: boolean
+  eventId?: string
+  snapshot: DebugSnapshot
 }
 
 let activeTaskCount = 0
@@ -19,6 +36,10 @@ let eventSequence = 0
 let idleTimer: NodeJS.Timeout | null = null
 let transientTimer: NodeJS.Timeout | null = null
 let eventLog: EventLogItem[] = loadEventLog()
+const processedEventKeys = new Set<string>()
+const DEDUP_KEY_TTL_MS = 10 * 60 * 1000
+const DEDUP_KEY_MAX_SIZE = 5000
+const dedupKeySeenAt = new Map<string, number>()
 
 function isStartedEvent(event: PetEvent): boolean {
   return event.type.endsWith("_STARTED")
@@ -30,6 +51,78 @@ function isFinishedEvent(event: PetEvent): boolean {
 
 function isFailedEvent(event: PetEvent): boolean {
   return event.type.endsWith("_FAILED")
+}
+
+function isDebugEvent(event: PetEvent): boolean {
+  return event.source.toLowerCase().includes("debug")
+}
+
+function getDedupEventKey(event: PetEvent): string {
+  const provider = event.provider ?? "unknown-provider"
+  const sourceType = event.sourceType ?? "unknown-source-type"
+
+  if (event.taskId) {
+    return [
+      sourceType,
+      event.source,
+      provider,
+      event.taskId,
+      event.type
+    ].join(":")
+  }
+
+  const normalizedTitle = (event.title ?? event.statusText ?? "untitled")
+    .trim()
+    .toLowerCase()
+  const timestamp = event.timestamp ?? Date.now()
+  const timeBucket = Math.floor(timestamp / 5000)
+
+  return [
+    sourceType,
+    event.source,
+    provider,
+    normalizedTitle,
+    event.type,
+    timeBucket
+  ].join(":")
+}
+
+function isDuplicateEvent(event: PetEvent): boolean {
+  if (isDebugEvent(event)) {
+    return false
+  }
+
+  const now = Date.now()
+  for (const [key, seenAt] of dedupKeySeenAt.entries()) {
+    if (now - seenAt > DEDUP_KEY_TTL_MS) {
+      dedupKeySeenAt.delete(key)
+      processedEventKeys.delete(key)
+    }
+  }
+
+  if (processedEventKeys.size > DEDUP_KEY_MAX_SIZE) {
+    const overflow = processedEventKeys.size - DEDUP_KEY_MAX_SIZE
+    let removed = 0
+    for (const key of dedupKeySeenAt.keys()) {
+      dedupKeySeenAt.delete(key)
+      processedEventKeys.delete(key)
+      removed += 1
+      if (removed >= overflow) {
+        break
+      }
+    }
+  }
+
+  const eventKey = getDedupEventKey(event)
+
+  if (processedEventKeys.has(eventKey)) {
+    dedupKeySeenAt.set(eventKey, now)
+    return true
+  }
+
+  processedEventKeys.add(eventKey)
+  dedupKeySeenAt.set(eventKey, now)
+  return false
 }
 
 function normalizeEvent(event: PetEvent): PetEvent {
@@ -73,8 +166,10 @@ export function getNextEventId(): string {
   return `evt_${(eventSequence + 1).toString().padStart(4, "0")}`
 }
 
-function appendEventLog(event: PetEvent): void {
-  eventLog = persistEventLogItem(createEventLogItem(event))
+function appendEventLog(event: PetEvent): EventLogItem {
+  const logItem = createEventLogItem(event)
+  eventLog = persistEventLogItem(logItem)
+  return logItem
 }
 
 function clearIdleTimer(): void {
@@ -94,12 +189,15 @@ function clearTransientTimer(): void {
 function getSnapshot(): DebugSnapshot {
   return {
     activeTaskCount,
+    dailyStats: loadTodayStats(),
     eventLog: [...eventLog],
+    profile: loadProfile(),
+    sources: loadSources().map(toPublicSource),
     state: currentState
   }
 }
 
-function broadcastSnapshot(options: IpcHandlerOptions): void {
+export function broadcastSnapshot(options: IpcHandlerOptions): void {
   const debugWindow = options.getDebugWindow()
 
   if (debugWindow && !debugWindow.isDestroyed()) {
@@ -141,22 +239,42 @@ function scheduleTransientResolution(
   )
 }
 
-export function dispatchPetEvent(
+export function dispatchPetEventWithResult(
   options: IpcHandlerOptions,
   event: PetEvent
-): DebugSnapshot {
+): DispatchPetEventResult {
   const normalizedEvent = normalizeEvent(event)
+
+  if (isDuplicateEvent(normalizedEvent)) {
+    return {
+      deduped: true,
+      snapshot: getSnapshot()
+    }
+  }
+
   const petWindow = options.showPetWindow()
 
   clearIdleTimer()
   clearTransientTimer()
   updateMainSnapshot(normalizedEvent)
-  appendEventLog(normalizedEvent)
+  const logItem = appendEventLog(normalizedEvent)
+  applyGrowthForEvent(normalizedEvent)
   petWindow.webContents.send(IPC_CHANNELS.PET_EVENT, normalizedEvent)
   broadcastSnapshot(options)
   scheduleTransientResolution(options, currentState)
 
-  return getSnapshot()
+  return {
+    deduped: false,
+    eventId: logItem.eventId,
+    snapshot: getSnapshot()
+  }
+}
+
+export function dispatchPetEvent(
+  options: IpcHandlerOptions,
+  event: PetEvent
+): DebugSnapshot {
+  return dispatchPetEventWithResult(options, event).snapshot
 }
 
 export function registerIpcHandlers(options: IpcHandlerOptions): void {
@@ -171,4 +289,26 @@ export function registerIpcHandlers(options: IpcHandlerOptions): void {
   })
 
   ipcMain.handle(IPC_CHANNELS.DEBUG_SNAPSHOT_GET, () => getSnapshot())
+
+  ipcMain.handle(IPC_CHANNELS.PROFILE_GET, () => loadProfile())
+
+  ipcMain.handle(
+    IPC_CHANNELS.PROFILE_UPDATE_NAME,
+    (_event, petName: string) => updatePetName(petName)
+  )
+
+  ipcMain.handle(IPC_CHANNELS.REPORT_GET, () => generateDailyReportSummary())
+
+  ipcMain.handle(IPC_CHANNELS.SHARE_CARD_GENERATE, () => {
+    const report = generateDailyReportSummary()
+    return generateShareCard(report)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.SHARE_CARD_REVEAL, (_event, filePath: string) => {
+    if (typeof filePath !== "string" || filePath.length === 0) {
+      throw new Error("Invalid share card path")
+    }
+
+    return shell.showItemInFolder(filePath)
+  })
 }
