@@ -17,6 +17,16 @@ function formatLastSeenAt(lastSeenAt: number): string {
   }).format(new Date(lastSeenAt))
 }
 
+function formatHealthLabel(health: "online" | "offline"): string {
+  return health === "online" ? "online" : "offline"
+}
+
+function resolveReconnectHint(health: "online" | "offline"): string {
+  return health === "online"
+    ? "Heartbeat normal"
+    : "Offline. Open source app and trigger a task or heartbeat."
+}
+
 export function SourceConnections({
   sources
 }: SourceConnectionsProps): React.ReactElement {
@@ -39,10 +49,11 @@ export function SourceConnections({
                   {source.sourceType}
                   {source.provider ? ` · ${source.provider}` : ""}
                 </span>
+                <span>{resolveReconnectHint(source.health)}</span>
               </div>
               <div className="source-meta">
-                <span className={`source-status source-status-${source.status}`}>
-                  {source.status}
+                <span className={`source-status source-status-${source.health}`}>
+                  {formatHealthLabel(source.health)}
                 </span>
                 <time dateTime={new Date(source.lastSeenAt).toISOString()}>
                   {formatLastSeenAt(source.lastSeenAt)}

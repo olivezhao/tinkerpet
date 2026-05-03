@@ -1,12 +1,16 @@
 import type { DailyStats, PetEvent } from "../../shared/types"
 import { loadTodayStats, saveTodayStats } from "../store/dailyStatsStore"
+import { addDecorPoints } from "../store/decorStore"
 import { addProfileXp, loadProfile } from "../store/profileStore"
 
 const FIRST_USE_XP = 3
 const FINISHED_XP = 5
 const FAILED_XP = 2
+const FIRST_USE_DECOR_POINTS = 1
+const FINISHED_DECOR_POINTS = 1
 
 interface GrowthResult {
+  decorPointsDelta: number
   dailyStats: DailyStats
   xpDelta: number
 }
@@ -40,6 +44,7 @@ export function applyGrowthForEvent(event: PetEvent): GrowthResult {
 
   if (isDebugEvent(event)) {
     return {
+      decorPointsDelta: 0,
       dailyStats: currentStats,
       xpDelta: 0
     }
@@ -52,9 +57,11 @@ export function applyGrowthForEvent(event: PetEvent): GrowthResult {
     rewardedTaskKeys: [...currentStats.rewardedTaskKeys]
   }
   let xpDelta = 0
+  let decorPointsDelta = 0
 
   if (!nextStats.firstUseXpAwarded) {
     xpDelta += FIRST_USE_XP
+    decorPointsDelta += FIRST_USE_DECOR_POINTS
     nextStats = {
       ...nextStats,
       firstUseXpAwarded: true
@@ -93,6 +100,7 @@ export function applyGrowthForEvent(event: PetEvent): GrowthResult {
 
     if (isFinishedEvent(event)) {
       xpDelta += FINISHED_XP
+      decorPointsDelta += FINISHED_DECOR_POINTS
       nextStats.completedCount += 1
     } else {
       xpDelta += FAILED_XP
@@ -110,7 +118,12 @@ export function applyGrowthForEvent(event: PetEvent): GrowthResult {
     loadProfile()
   }
 
+  if (decorPointsDelta > 0) {
+    addDecorPoints(decorPointsDelta)
+  }
+
   return {
+    decorPointsDelta,
     dailyStats: saveTodayStats(nextStats),
     xpDelta
   }

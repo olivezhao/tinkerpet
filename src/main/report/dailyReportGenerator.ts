@@ -1,4 +1,5 @@
 import type { DailyReportSummary, DailyStats } from "../../shared/types"
+import { resolveBubbleTextByState } from "../../shared/personality"
 import { loadTodayStats } from "../store/dailyStatsStore"
 import { loadProfile } from "../store/profileStore"
 
@@ -66,12 +67,14 @@ export function generateDailyReportSummary(): DailyReportSummary {
     generatedAt: Date.now(),
     level: profile.level,
     petName: profile.petName,
+    personality: profile.personality,
+    skinId: profile.skinId,
     startedCount: stats.startedCount,
-    summaryText: buildSummaryText(
+    summaryText: `${buildSummaryText(
       stats.completedCount,
       stats.failedCount,
       totalWaitMinutes
-    ),
+    )} ${resolveBubbleTextByState(profile.personality, "finished")}`,
     topSource: resolveTopSource(stats),
     totalWaitMinutes,
     totalXp: profile.xp,

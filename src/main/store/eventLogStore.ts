@@ -71,3 +71,8 @@ export function clearEventLog(): EventLogItem[] {
   writeEventLog(cachedEventLog)
   return cachedEventLog
 }
+
+export function resetEventLogStore(): void {
+  cachedEventLog = []
+  writeEventLog([])
+}

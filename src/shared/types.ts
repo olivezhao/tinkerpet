@@ -4,6 +4,7 @@ export type EventProvider =
   | "chatgpt"
   | "claude"
   | "cursor"
+  | "deepseek"
   | "gemini"
   | "pet-run"
   | "vscode"
@@ -63,6 +64,8 @@ export interface DailyReportSummary {
   generatedAt: number
   level: number
   petName: string
+  personality: PetPersonality
+  skinId: string
   startedCount: number
   summaryText: string
   topSource: string
@@ -75,6 +78,22 @@ export interface ShareCardResult {
   fileName: string
   filePath: string
   generatedAt: number
+}
+
+export interface SevenDayStatsDay {
+  date: string
+  durationMinutes: number
+  failedTasks: number
+  finishedTasks: number
+  waitingSessions: number
+  xpGained: number
+}
+
+export interface SevenDayStats {
+  days: SevenDayStatsDay[]
+  generatedAt: number
+  levelSeries: Array<{ date: string; level: number }>
+  sourceDistribution: Record<string, number>
 }
 
 export interface DailyStats {
@@ -100,9 +119,13 @@ export interface PetProfile {
   createdAt: number
   level: number
   petName: string
+  personality: PetPersonality
+  skinId: string
   updatedAt: number
   xp: number
 }
+
+export type PetPersonality = "calm" | "encourage" | "tease"
 
 export interface AppConfig {
   bridge: {
@@ -126,8 +149,11 @@ export interface AppConfig {
 
 export type SourceStatus = "connected" | "stale"
 
+export type SourceHealth = "offline" | "online"
+
 export interface SourceRecord {
   createdAt: number
+  health: SourceHealth
   lastSeenAt: number
   name: string
   provider?: EventProvider
@@ -138,6 +164,25 @@ export interface SourceRecord {
 }
 
 export type PublicSourceRecord = Omit<SourceRecord, "token">
+
+export interface DecorSelection {
+  background?: string
+  desk?: string
+  hanging?: string
+}
+
+export interface DecorState {
+  decorPoints: number
+  selected: DecorSelection
+  unlockedItemIds: string[]
+  updatedAt: number
+}
+
+export interface GrowthState {
+  lastAwardedAt: number
+  totalXpGained: number
+  updatedAt: number
+}
 
 export type EventBridgeErrorCode =
   | "INTERNAL_ERROR"

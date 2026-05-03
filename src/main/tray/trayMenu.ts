@@ -9,6 +9,7 @@ import { updateConfig } from "../store/configStore"
 interface TrayMenuOptions {
   getAlwaysOnTop: () => boolean
   getMousePassthrough: () => boolean
+  openDataPanelWindow: () => BrowserWindow
   openDebugWindow: () => BrowserWindow
   openReportWindow: () => BrowserWindow
   getPetWindow: () => BrowserWindow | null
@@ -69,6 +70,12 @@ function createContextMenu(options: TrayMenuOptions): Menu {
       label: "Open Daily Report",
       click: () => {
         options.openReportWindow().show()
+      }
+    },
+    {
+      label: "Open Data Panel",
+      click: () => {
+        options.openDataPanelWindow().show()
       }
     },
     { type: "separator" },

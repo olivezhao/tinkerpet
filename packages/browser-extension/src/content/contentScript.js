@@ -2,10 +2,12 @@ const SUPPORTED_HOSTS = new Set([
   "chat.openai.com",
   "chatgpt.com",
   "claude.ai",
+  "chat.deepseek.com",
   "gemini.google.com"
 ])
 
 const CHATGPT_HOSTS = new Set(["chat.openai.com", "chatgpt.com"])
+const DEEPSEEK_HOSTS = new Set(["chat.deepseek.com"])
 const GEMINI_HOSTS = new Set(["gemini.google.com"])
 const DETECTION_INTERVAL_MS = 700
 const CHATGPT_GENERATING_SELECTORS = [
@@ -21,6 +23,12 @@ const GEMINI_GENERATING_SELECTORS = [
   "button[aria-label*='停止生成']",
   "button[aria-label*='停止']"
 ]
+const DEEPSEEK_GENERATING_SELECTORS = [
+  "button[aria-label*='Stop']",
+  "button[aria-label*='停止']",
+  "button[aria-label*='停止生成']",
+  "button[aria-label*='停止回答']"
+]
 
 function detectProvider(hostname) {
   if (hostname === "claude.ai") {
@@ -29,6 +37,10 @@ function detectProvider(hostname) {
 
   if (hostname === "gemini.google.com") {
     return "gemini"
+  }
+
+  if (hostname === "chat.deepseek.com") {
+    return "deepseek"
   }
 
   if (hostname === "chat.openai.com" || hostname === "chatgpt.com") {
@@ -204,5 +216,16 @@ if (GEMINI_HOSTS.has(window.location.hostname)) {
     provider: "gemini",
     startedStatusText: "Gemini is generating",
     title: "Gemini response"
+  })
+}
+
+if (DEEPSEEK_HOSTS.has(window.location.hostname)) {
+  startAiDetector({
+    detector: "deepseek-dom",
+    finishedStatusText: "DeepSeek generation finished",
+    generatingSelectors: DEEPSEEK_GENERATING_SELECTORS,
+    provider: "deepseek",
+    startedStatusText: "DeepSeek is generating",
+    title: "DeepSeek response"
   })
 }

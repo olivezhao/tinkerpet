@@ -149,3 +149,8 @@ export function saveTodayStats(nextStats: DailyStats): DailyStats {
   writeStatsByDate(statsByDate)
   return nextStats
 }
+
+export function resetDailyStatsStore(): void {
+  cachedStatsByDate = {}
+  writeStatsByDate(cachedStatsByDate)
+}

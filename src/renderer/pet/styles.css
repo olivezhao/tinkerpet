@@ -31,6 +31,13 @@ body {
 }
 
 .pet-placeholder {
+  --pet-body-color: #a7e3d4;
+  --pet-eye-color: #202124;
+  --pet-flash-color: rgb(255 236 128 / 64%);
+  --pet-mouth-color: #202124;
+  --pet-shadow-color: rgb(32 33 36 / 18%);
+  --pet-sleep-color: #202124;
+  --pet-tool-color: #f7c948;
   align-items: center;
   display: flex;
   height: 180px;
@@ -38,6 +45,89 @@ body {
   position: relative;
   width: 180px;
   -webkit-app-region: no-drag;
+}
+
+.room-decor {
+  pointer-events: none;
+  position: absolute;
+}
+
+.room-background {
+  border-radius: 14px;
+  height: 150px;
+  left: 16px;
+  top: 12px;
+  width: 150px;
+  z-index: 0;
+}
+
+.room-background[data-item="grid-wall"] {
+  background:
+    linear-gradient(90deg, rgb(255 255 255 / 28%) 1px, transparent 1px) 0 0 / 14px 14px,
+    linear-gradient(rgb(255 255 255 / 26%) 1px, transparent 1px) 0 0 / 14px 14px,
+    #9cc2e8;
+}
+
+.room-background[data-item="night-wall"] {
+  background: radial-gradient(circle at 20% 20%, #d8ddff, #5c6fa8 68%);
+}
+
+.room-desk {
+  bottom: 28px;
+  height: 18px;
+  left: 40px;
+  width: 100px;
+  z-index: 1;
+}
+
+.room-desk[data-item="mini-lamp"]::before {
+  background: #f3f0db;
+  border: 2px solid #202124;
+  border-radius: 6px 6px 2px 2px;
+  content: "";
+  height: 12px;
+  left: 6px;
+  position: absolute;
+  top: -10px;
+  width: 18px;
+}
+
+.room-desk[data-item="toolbox"]::before {
+  background: #ffb05d;
+  border: 2px solid #202124;
+  border-radius: 4px;
+  content: "";
+  height: 16px;
+  position: absolute;
+  right: 4px;
+  top: -11px;
+  width: 28px;
+}
+
+.room-hanging {
+  height: 40px;
+  left: 76px;
+  top: 8px;
+  width: 28px;
+  z-index: 1;
+}
+
+.room-hanging[data-item="star-mobile"]::before {
+  color: #f8c144;
+  content: "★";
+  font-size: 20px;
+  left: 4px;
+  position: absolute;
+  top: 10px;
+}
+
+.room-hanging[data-item="gear-hook"]::before {
+  color: #4d4d4d;
+  content: "⚙";
+  font-size: 20px;
+  left: 4px;
+  position: absolute;
+  top: 10px;
 }
 
 .pet-placeholder[data-animation="idle-breathe"] .pet-body {
@@ -97,36 +187,39 @@ body {
 }
 
 .pet-shadow {
-  background: rgb(32 33 36 / 18%);
+  background: var(--pet-shadow-color);
   border-radius: 999px;
   bottom: 18px;
   height: 18px;
   position: absolute;
   width: 104px;
+  z-index: 2;
 }
 
 .pet-flash {
-  background: rgb(255 236 128 / 64%);
+  background: var(--pet-flash-color);
   border-radius: 999px;
   height: 164px;
   opacity: 0;
   position: absolute;
   width: 164px;
+  z-index: 4;
 }
 
 .pet-sleep-z {
-  color: #202124;
+  color: var(--pet-sleep-color);
   font-size: 22px;
   font-weight: 800;
   opacity: 0;
   position: absolute;
   right: 32px;
   top: 12px;
+  z-index: 5;
 }
 
 .pet-body {
   align-items: center;
-  background: #a7e3d4;
+  background: var(--pet-body-color);
   border: 3px solid #202124;
   border-radius: 48% 52% 46% 54%;
   box-sizing: border-box;
@@ -136,6 +229,7 @@ body {
   margin-bottom: 22px;
   position: relative;
   width: 142px;
+  z-index: 3;
 }
 
 .pet-face {
@@ -145,7 +239,7 @@ body {
 }
 
 .pet-face span {
-  background: #202124;
+  background: var(--pet-eye-color);
   border-radius: 999px;
   display: block;
   height: 14px;
@@ -153,7 +247,7 @@ body {
 }
 
 .pet-mouth {
-  border-bottom: 3px solid #202124;
+  border-bottom: 3px solid var(--pet-mouth-color);
   border-radius: 0 0 999px 999px;
   bottom: 36px;
   height: 12px;
@@ -162,7 +256,7 @@ body {
 }
 
 .pet-tool {
-  background: #f7c948;
+  background: var(--pet-tool-color);
   border: 2px solid #202124;
   border-radius: 6px;
   height: 18px;
