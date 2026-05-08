@@ -10,16 +10,7 @@ TinkerPet 是一个面向 AI 工作流等待场景的桌面陪伴机器人。它
 
 ## Preview / 效果图
 
-> Replace this placeholder image with the final robot visual.  
-> 请将下方占位图替换为最终机器人效果图。
-
-![TinkerPet Robot Preview Placeholder](docs/images/tinkerpet-robot-preview.png)
-
-Recommended image path:
-
-```txt
-docs/images/tinkerpet-robot-preview.png
-```
+![alt text](docs/images/tinkerpet-robot-preview.png)
 
 ---
 
