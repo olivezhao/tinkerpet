@@ -1,61 +1,81 @@
 # TinkerPet
 
-TinkerPet is a desktop companion for AI work sessions, focused on one thing:
-turning “AI waiting time” into a lightweight, playful, and non-intrusive experience.
+> 桌面 AI 陪伴机器人 / Desktop AI Companion Robot
 
-When your AI tasks are running, TinkerPet stays on desktop, reacts to task state changes,
-and gives clear completion feedback so users can shift attention back at the right moment.
+---
 
-## What This Project Is
+## 中文介绍
 
-TinkerPet is currently a macOS-first desktop app prototype that combines:
+### 项目背景
 
-- Event-driven desktop pet behavior
-- 3D robot rendering and motion scheduling
-- Quick Play mini-game (Gomoku)
-- Local growth loop (XP, level, decor points)
-- Daily report and share card output
+随着 AI 在办公、编码、创作场景中的普及，用户出现了大量“等待 AI 执行结果”的碎片时间。  
+TinkerPet 旨在把这段等待从“空转焦虑”变成“轻量陪伴 + 明确反馈 + 可玩互动”。
 
-This repository contains both product iteration artifacts and executable app code.
+### 项目价值
 
-## Core Product Experience
+- **降低等待焦虑**：等待中有状态感与陪伴感，不再只是盯着进度条。
+- **提升反馈效率**：任务完成时用明显但克制的视觉信号提醒用户回到主任务。
+- **增强留存体验**：通过成长值、战绩、日报等机制形成连续使用动机。
+- **保持低打扰**：动作节奏有冷却与降频控制，避免持续吸引注意力。
 
-1. **Always-on desktop companion**
-   - Transparent frameless pet window
-   - Menu bar tray control (show/hide/reset/settings/report/quick-play)
+### 机器人效果图
 
-2. **AI waiting-state reactions**
-   - Event bridge receives AI/workflow events
-   - Pet switches among idle/waiting/finished/failed/sleeping states
+![TinkerPet Robot](src/renderer/pet/assets/prototype/tinker-front.png)
+![TinkerPet Robot Pose](src/renderer/pet/assets/prototype/robot-main-focused.png)
 
-3. **V0.6 motion system**
-   - Idle walk loop + occasional jog burst
-   - Waiting showcase pool (random short performances)
-   - Completion signal FX (paper-plane/envelope)
-   - Anti-fatigue rhythm controls
+### 核心能力（当前版本）
 
-4. **Retention loop**
-   - Local progression (XP/level/decor)
-   - Quick Play match history
-   - Daily report + share card
+1. 桌面宠物常驻（macOS）
+2. AI/工作流事件驱动状态切换（started/finished/failed）
+3. 3D 机器人渲染与动作调度（V0.6）
+4. 完成提醒特效（纸飞机/信封）
+5. Quick Play 五子棋对战
+6. 成长体系（XP/Level/Decor）+ 每日报告 + 分享卡片
 
-## Robot 3D Model
+### 3D 模型来源
 
-Current runtime model source:
+- 运行时模型：`src/renderer/pet/assets3d/models/robot.glb`
+- 来源页面（用于溯源）：[Sketchfab Robot](https://sketchfab.com/3d-models/robot-80a736ddac1044299b134cfcca87c7f9)
 
-- Sketchfab: [Robot (model page)](https://sketchfab.com/3d-models/robot-80a736ddac1044299b134cfcca87c7f9)
-- Local asset in repo: `src/renderer/pet/assets3d/models/robot.glb`
+---
 
-> Note: previous README preview image has been removed because it was an early concept image and not the exact runtime 3D model source page.
+## English Overview
 
-## Architecture Snapshot
+### Why TinkerPet
 
-- **Desktop App**: Electron
-- **UI**: React + TypeScript
-- **Build**: Vite / electron-vite
-- **3D Runtime**: Three.js
-- **Storage**: local JSON files (app data directory)
-- **Event Ingestion**: local HTTP bridge + debug/manual event injection
+As AI tools become part of daily work and coding, users spend more micro-moments waiting for results.  
+TinkerPet turns those waiting moments into a lightweight loop of companionship, clear completion signals, and playful interaction.
+
+### Product Value
+
+- **Reduce waiting anxiety** with visible state and companion behavior.
+- **Improve attention handoff** with clear completion cues.
+- **Increase retention** through growth mechanics, match history, and daily reports.
+- **Stay non-intrusive** via rhythm controls, cooldown, and long-wait frequency reduction.
+
+### Current Highlights
+
+1. Always-on desktop pet window (macOS)
+2. Event-driven state transitions from AI/workflow updates
+3. 3D robot runtime with motion scheduler (V0.6)
+4. Completion notification effects (paper-plane/envelope)
+5. Quick Play Gomoku mini-game
+6. Local progression loop (XP/Level/Decor) + report + share card
+
+### Robot Asset
+
+- Runtime asset: `src/renderer/pet/assets3d/models/robot.glb`
+- Source page: [Sketchfab Robot](https://sketchfab.com/3d-models/robot-80a736ddac1044299b134cfcca87c7f9)
+
+---
+
+## Tech Stack
+
+- Electron
+- React + TypeScript
+- Vite / electron-vite
+- Three.js
+- Local JSON persistence
 
 ## Quick Start
 
@@ -64,18 +84,18 @@ npm install
 npm run dev
 ```
 
-After launch, use the `TinkerPet` menu bar item to open:
+Launch the app and open actions from the `TinkerPet` menu bar item:
 - Settings
 - Debug Panel
 - Daily Report
 - Quick Play
 
-## Main Scripts
+## Scripts
 
-- `npm run dev` — start app in development mode
-- `npm run typecheck` — TypeScript check
-- `npm run lint` — ESLint check
-- `npm run build` — production build
+- `npm run dev` - start app in development mode
+- `npm run typecheck` - TypeScript check
+- `npm run lint` - ESLint check
+- `npm run build` - production build
 
 ## Verification
 
@@ -86,8 +106,6 @@ npm run build
 ```
 
 ## Local Event Bridge
-
-The bridge accepts authenticated events and drives pet state transitions.
 
 Token and port are stored in:
 
@@ -119,9 +137,3 @@ Supported event types:
 - `WORKFLOW_TASK_STARTED`
 - `WORKFLOW_TASK_FINISHED`
 - `WORKFLOW_TASK_FAILED`
-
-## Project Status
-
-- Current branch baseline includes V0.5 Quick Play + V0.6 motion system implementation.
-- Product/technical/AI-plan docs follow versioned evolution under:
-  - `/Users/olive/Documents/New project/02-versions`
