@@ -251,6 +251,58 @@ label {
   font-size: 20px;
 }
 
+.motion-config-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.motion-config-grid div {
+  background: #eef4ff;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.motion-config-grid span {
+  color: #5f6368;
+  display: block;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.motion-config-grid strong {
+  font-size: 16px;
+}
+
+.motion-controls-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.motion-controls-grid label {
+  background: #f3f6fb;
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+}
+
+.motion-controls-grid span {
+  color: #5f6368;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.motion-controls-grid input[type="range"] {
+  width: 100%;
+}
+
+.motion-controls-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .source-count {
   align-items: center;
   background: #edf4ff;

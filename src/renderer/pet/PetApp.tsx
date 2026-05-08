@@ -1,4 +1,5 @@
 import React from "react"
+import type { MotionId } from "../../shared/motionPresets"
 import type { DecorState, PetPersonality } from "../../shared/types"
 import {
   INITIAL_PET_MACHINE_STATE,
@@ -12,26 +13,45 @@ import { runAnimationManifestSelfCheck } from "./animationManifest"
 import { runAssetManifestSelfCheck } from "./assetManifestValidator"
 import { PetSprite } from "./components/PetSprite"
 import { StatusBubble } from "./components/StatusBubble"
+import { CompletionFx } from "./components/CompletionFx"
 import { resolveExpressionPreset } from "./expressionManifest"
 import {
   resolveBubbleTextByEvent,
   resolveBubbleTextByState,
   resolveLongWaitText
 } from "../../shared/personality"
+import {
+  initializeMotionSchedule,
+  pickInteractionMotion,
+  resolveMotionByState,
+  runMotionSchedulerSelfCheck
+} from "./motionScheduler"
+import { runMotionPresetsSelfCheck } from "../../shared/motionPresets"
+import { runShowcasePoolSelfCheck } from "./showcasePool"
 
 const SELF_CHECK_PASSED =
   runPetStateMachineSelfCheck() &&
   runAnimationManifestSelfCheck() &&
-  runAssetManifestSelfCheck()
+  runAssetManifestValidator() &&
+  runMotionSchedulerSelfCheck() &&
+  runMotionPresetsSelfCheck() &&
+  runShowcasePoolSelfCheck()
+
+function runAssetManifestValidator(): boolean {
+  return runAssetManifestSelfCheck()
+}
 
 export function PetApp(): React.ReactElement {
   const [machineState, setMachineState] = React.useState<PetMachineState>(
     INITIAL_PET_MACHINE_STATE
   )
   const [skinId, setSkinId] = React.useState("default-bot")
-  const [motionVariant, setMotionVariant] = React.useState(0)
+  const [motionId, setMotionId] = React.useState<MotionId>("walk-loop")
   const [personality, setPersonality] = React.useState<PetPersonality>("encourage")
   const [bubbleText, setBubbleText] = React.useState("我在这，随时开工。")
+  const [completionFxKind, setCompletionFxKind] = React.useState<"envelope" | "paper-plane" | null>(
+    null
+  )
   const [decorState, setDecorState] = React.useState<DecorState>({
     decorPoints: 0,
     selected: {
@@ -46,6 +66,7 @@ export function PetApp(): React.ReactElement {
     () => resolveExpressionPreset(personality, machineState.state),
     [personality, machineState.state]
   )
+  const schedulerRef = React.useRef(initializeMotionSchedule())
 
   React.useEffect(() => {
     let active = true
@@ -110,7 +131,23 @@ export function PetApp(): React.ReactElement {
   }, [machineState.state, personality])
 
   React.useEffect(() => {
-    setMotionVariant((current) => current + 1)
+    const now = Date.now()
+    const next = resolveMotionByState(machineState.state, now, schedulerRef.current)
+    schedulerRef.current = next
+    setMotionId(next.currentMotionId)
+  }, [machineState.state])
+
+  React.useEffect(() => {
+    const timer = window.setInterval(() => {
+      const now = Date.now()
+      const next = resolveMotionByState(machineState.state, now, schedulerRef.current)
+      if (next.currentMotionId !== schedulerRef.current.currentMotionId) {
+        setMotionId(next.currentMotionId)
+      }
+      schedulerRef.current = next
+    }, 1000)
+
+    return () => window.clearInterval(timer)
   }, [machineState.state])
 
   React.useEffect(() => {
@@ -118,12 +155,25 @@ export function PetApp(): React.ReactElement {
       return undefined
     }
 
+    let fxTimer: number | null = null
+    if (machineState.state === "finished") {
+      setCompletionFxKind(Math.random() > 0.5 ? "paper-plane" : "envelope")
+      fxTimer = window.setTimeout(() => {
+        setCompletionFxKind(null)
+      }, 1100)
+    }
+
     const timeoutMs = machineState.state === "finished" ? 2000 : 3000
     const timeout = window.setTimeout(() => {
       setMachineState(resolveTransientPetState)
     }, timeoutMs)
 
-    return () => window.clearTimeout(timeout)
+    return () => {
+      if (fxTimer !== null) {
+        window.clearTimeout(fxTimer)
+      }
+      window.clearTimeout(timeout)
+    }
   }, [machineState.state])
 
   React.useEffect(() => {
@@ -140,8 +190,14 @@ export function PetApp(): React.ReactElement {
 
   function handlePetClick(event: React.MouseEvent<HTMLElement>): void {
     const target = event.target
-    if (target instanceof HTMLCanvasElement) {
+    if (target instanceof HTMLCanvasElement || target instanceof SVGElement) {
       return
+    }
+
+    const interaction = pickInteractionMotion(Date.now(), schedulerRef.current)
+    schedulerRef.current = interaction.nextState
+    if (interaction.motionId) {
+      setMotionId(interaction.motionId)
     }
 
     setMachineState((current) =>
@@ -165,10 +221,11 @@ export function PetApp(): React.ReactElement {
       <PetSprite
         decorSelection={decorState.selected}
         expression={expression}
-        motionVariant={motionVariant}
+        motionId={motionId}
         skinId={skinId}
         state={machineState.state}
       />
+      {completionFxKind ? <CompletionFx kind={completionFxKind} /> : null}
       <StatusBubble
         message={bubbleText}
         selfCheckPassed={SELF_CHECK_PASSED}

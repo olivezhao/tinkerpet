@@ -5,10 +5,12 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
 import robotModelUrl from "../assets3d/models/robot.glb"
 import type { ExpressionPreset } from "../expressionManifest"
 import type { SkinTheme } from "../skinManifest"
+import type { MotionId } from "../../../shared/motionPresets"
 
 interface ThreePetCanvasProps {
   animationName: string
   expression: ExpressionPreset
+  motionId: MotionId
   onInitError: () => void
   skin: SkinTheme
 }
@@ -46,16 +48,19 @@ function resolveClipByState(
 export function ThreePetCanvas({
   animationName,
   expression,
+  motionId,
   onInitError,
   skin
 }: ThreePetCanvasProps): React.ReactElement {
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null)
   const animationRef = React.useRef(animationName)
   const expressionRef = React.useRef(expression)
+  const motionRef = React.useRef(motionId)
   const skinRef = React.useRef(skin)
 
   animationRef.current = animationName
   expressionRef.current = expression
+  motionRef.current = motionId
   skinRef.current = skin
 
   React.useEffect(() => {
@@ -248,20 +253,24 @@ export function ThreePetCanvas({
       nextAction.enabled = true
       nextAction.setEffectiveWeight(1)
       const speedScale =
-        animationRef.current === "working-tinker" || animationRef.current === "thinking-tick"
-          ? 0.52
-          : animationRef.current === "success-spark" || animationRef.current === "success-pump"
-            ? 0.6
-            : animationRef.current === "fail-reboot"
-              ? 0.5
-              : 0.46
+        motionRef.current === "jog-burst"
+          ? 0.8
+          : motionRef.current === "walk-loop"
+            ? 0.52
+            : motionRef.current.startsWith("showcase")
+              ? 0.68
+              : motionRef.current === "finished-signal" ||
+                  motionRef.current === "interaction-wave"
+                ? 0.62
+                : motionRef.current === "failed-reset"
+                  ? 0.5
+                  : motionRef.current === "sleep-slow"
+                    ? 0.4
+                    : 0.52
       nextAction.setEffectiveTimeScale(speedScale)
-      nextAction.loop =
-        animationRef.current === "success-spark" ||
-        animationRef.current === "success-pump" ||
-        animationRef.current === "fail-reboot"
-          ? THREE.LoopOnce
-          : THREE.LoopRepeat
+      nextAction.loop = !["walk-loop", "sleep-slow"].includes(motionRef.current)
+        ? THREE.LoopOnce
+        : THREE.LoopRepeat
       nextAction.clampWhenFinished = true
 
       if (activeAction) {
@@ -307,14 +316,21 @@ export function ThreePetCanvas({
       const t = timer.getElapsed()
       const currentAnimation = animationRef.current
       const currentExpression = expressionRef.current
+      const currentMotion = motionRef.current
       const delta = timer.getDelta()
       const motionDuty =
-        currentAnimation === "working-tinker" || currentAnimation === "thinking-tick"
+        currentMotion === "walk-loop"
+          ? 0.5
+          : currentMotion === "jog-burst"
+            ? 0.72
+            : currentMotion.startsWith("showcase")
+              ? 0.64
+              : currentAnimation === "working-tinker" || currentAnimation === "thinking-tick"
           ? 0.58
           : currentAnimation === "idle-breathe" || currentAnimation === "idle-scan"
             ? 0.5
             : 0.72
-      const cycle = currentAnimation === "sleep-powerdown" ? 5.4 : 4.8
+      const cycle = currentMotion === "sleep-slow" ? 5.4 : currentMotion === "jog-burst" ? 3.2 : 4.8
       const phase = (t % cycle) / cycle
       const envelope = phase <= motionDuty ? 1 : 0.06
 
@@ -325,19 +341,27 @@ export function ThreePetCanvas({
         let y = Math.sin(t * 1.1) * 0.012
         let autoYaw = 0
 
-        if (currentAnimation === "working-tinker" || currentAnimation === "thinking-tick") {
+        if (currentMotion === "jog-burst") {
+          y = Math.sin(t * 3.1) * 0.028
+          autoYaw = Math.sin(t * 2.6) * 0.012
+        } else if (
+          currentMotion === "showcase-a" ||
+          currentMotion === "showcase-b" ||
+          currentMotion === "showcase-c" ||
+          currentMotion === "showcase-d"
+        ) {
+          y = Math.sin(t * 2.6) * 0.021
+          autoYaw = Math.sin(t * 3.2) * 0.02
+        } else if (currentAnimation === "working-tinker" || currentAnimation === "thinking-tick") {
           y = Math.sin(t * 2.3) * 0.02
           autoYaw = Math.sin(t * 2.1) * 0.008
-        } else if (
-          currentAnimation === "success-spark" ||
-          currentAnimation === "success-pump"
-        ) {
+        } else if (currentMotion === "finished-signal" || currentMotion === "interaction-wave") {
           y = Math.abs(Math.sin(t * 2.8)) * 0.05
           autoYaw = Math.sin(t * 1.9) * 0.007
-        } else if (currentAnimation === "fail-reboot") {
+        } else if (currentMotion === "failed-reset") {
           y = Math.sin(t * 4.5) * 0.009
           autoYaw = Math.sin(t * 4.9) * 0.016
-        } else if (currentAnimation === "sleep-powerdown") {
+        } else if (currentMotion === "sleep-slow") {
           y = Math.sin(t * 0.52) * 0.006 - 0.04
           autoYaw = 0
         }
@@ -350,7 +374,12 @@ export function ThreePetCanvas({
         modelRoot.position.y = hasNativeAnimation ? baseTransform.y : baseTransform.y + y
         modelRoot.position.z = baseTransform.z
         modelRoot.rotation.y = baseTransform.rotY + autoYaw + viewport.userYaw
-        modelRoot.rotation.z = currentExpression.head === "tilt" ? -0.025 : 0
+        modelRoot.rotation.z =
+          currentExpression.head === "tilt"
+            ? -0.025
+            : currentMotion === "interaction-nod"
+              ? Math.sin(t * 7.2) * 0.03
+              : 0
       }
 
       controls.update()
