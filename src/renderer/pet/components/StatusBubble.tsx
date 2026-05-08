@@ -1,20 +1,18 @@
 import React from "react"
-import type { PetState } from "../../../shared/types"
 
 interface StatusBubbleProps {
+  message: string
   selfCheckPassed: boolean
-  state: PetState
 }
 
 export function StatusBubble({
+  message,
   selfCheckPassed,
-  state
 }: StatusBubbleProps): React.ReactElement {
   return (
     <div className="state-badge">
-      {state}
+      {message}
       {selfCheckPassed ? "" : " !"}
     </div>
   )
 }
-

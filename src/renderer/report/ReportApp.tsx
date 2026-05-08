@@ -17,6 +17,8 @@ const EMPTY_REPORT: DailyReportSummary = {
   generatedAt: 0,
   level: 1,
   petName: "Tinker",
+  personality: "encourage",
+  skinId: "default-bot",
   startedCount: 0,
   summaryText: "",
   topSource: "No active source",

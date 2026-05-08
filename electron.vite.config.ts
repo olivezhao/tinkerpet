@@ -14,6 +14,7 @@ export default defineConfig({
     build: {
       rollupOptions: {
         input: {
+          dataPanelPreload: "src/preload/dataPanelPreload.ts",
           debugPreload: "src/preload/debugPreload.ts",
           petPreload: "src/preload/petPreload.ts",
           reportPreload: "src/preload/reportPreload.ts"
@@ -27,6 +28,7 @@ export default defineConfig({
     }
   },
   renderer: {
+    assetsInclude: ["**/*.glb", "**/*.gltf"],
     server: {
       host: "127.0.0.1",
       port: 5173,
@@ -35,6 +37,7 @@ export default defineConfig({
     build: {
       rollupOptions: {
         input: {
+          dataPanel: resolve("src/renderer/data-panel.html"),
           debug: resolve("src/renderer/debug.html"),
           pet: resolve("src/renderer/index.html"),
           report: resolve("src/renderer/report.html")

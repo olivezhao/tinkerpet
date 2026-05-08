@@ -6,10 +6,12 @@ import { loadConfig, updateConfig } from "./store/configStore"
 import { createTrayMenu } from "./tray/trayMenu"
 import { createDebugWindow } from "./windows/debugWindow"
 import { createPetWindow } from "./windows/petWindow"
+import { createDataPanelWindow } from "./windows/dataPanelWindow"
 import { createReportWindow } from "./windows/reportWindow"
 
 let petWindow: BrowserWindow | null = null
 let debugWindow: BrowserWindow | null = null
+let dataPanelWindow: BrowserWindow | null = null
 let reportWindow: BrowserWindow | null = null
 let bridgeServer: Server | null = null
 
@@ -86,6 +88,21 @@ function openReportWindow(): BrowserWindow {
   return reportWindow
 }
 
+function openDataPanelWindow(): BrowserWindow {
+  if (dataPanelWindow && !dataPanelWindow.isDestroyed()) {
+    dataPanelWindow.show()
+    dataPanelWindow.focus()
+    return dataPanelWindow
+  }
+
+  dataPanelWindow = createDataPanelWindow()
+  dataPanelWindow.on("closed", () => {
+    dataPanelWindow = null
+  })
+
+  return dataPanelWindow
+}
+
 void app.whenReady().then(() => {
   loadConfig()
 
@@ -109,6 +126,7 @@ void app.whenReady().then(() => {
   createTrayMenu({
     getAlwaysOnTop: () => loadConfig().window.alwaysOnTop,
     getMousePassthrough: () => loadConfig().window.ignoreMouseEvents,
+    openDataPanelWindow,
     openDebugWindow,
     openReportWindow,
     getPetWindow,

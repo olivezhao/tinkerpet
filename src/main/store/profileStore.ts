@@ -1,7 +1,8 @@
 import { app } from "electron"
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
-import type { PetProfile } from "../../shared/types"
+import type { PetPersonality, PetProfile } from "../../shared/types"
+import { DEFAULT_SKIN_ID, isSkinId } from "../../shared/skins"
 
 const PROFILE_FILE_NAME = "tinkerpet-profile.json"
 const DEFAULT_PET_NAME = "Tinker"
@@ -24,6 +25,8 @@ function createDefaultProfile(): PetProfile {
     createdAt: now,
     level: calculateLevel(0),
     petName: DEFAULT_PET_NAME,
+    personality: "encourage",
+    skinId: DEFAULT_SKIN_ID,
     updatedAt: now,
     xp: 0
   }
@@ -51,6 +54,14 @@ export function validatePetName(value: string): string | null {
   return null
 }
 
+function normalizePersonality(value: unknown): PetPersonality {
+  if (value === "calm" || value === "encourage" || value === "tease") {
+    return value
+  }
+
+  return "encourage"
+}
+
 function mergeProfile(value: unknown): PetProfile {
   const defaults = createDefaultProfile()
 
@@ -67,6 +78,8 @@ function mergeProfile(value: unknown): PetProfile {
       typeof value.petName === "string" && validatePetName(value.petName) === null
         ? normalizePetName(value.petName)
         : defaults.petName,
+    personality: normalizePersonality(value.personality),
+    skinId: isSkinId(value.skinId) ? value.skinId : defaults.skinId,
     updatedAt:
       typeof value.updatedAt === "number" ? value.updatedAt : defaults.updatedAt,
     xp: typeof value.xp === "number" ? Math.max(0, value.xp) : defaults.xp
@@ -129,6 +142,39 @@ export function updatePetName(petName: string): PetProfile {
     petName: normalizePetName(petName),
     updatedAt: Date.now()
   }
+  writeProfile(cachedProfile)
+  return cachedProfile
+}
+
+export function updateProfileSkin(skinId: string): PetProfile {
+  if (!isSkinId(skinId)) {
+    throw new Error("Unsupported skin.")
+  }
+
+  const currentProfile = loadProfile()
+  cachedProfile = {
+    ...currentProfile,
+    skinId,
+    updatedAt: Date.now()
+  }
+  writeProfile(cachedProfile)
+  return cachedProfile
+}
+
+export function updateProfilePersonality(personality: string): PetProfile {
+  const nextPersonality = normalizePersonality(personality)
+  const currentProfile = loadProfile()
+  cachedProfile = {
+    ...currentProfile,
+    personality: nextPersonality,
+    updatedAt: Date.now()
+  }
+  writeProfile(cachedProfile)
+  return cachedProfile
+}
+
+export function resetProfile(): PetProfile {
+  cachedProfile = createDefaultProfile()
   writeProfile(cachedProfile)
   return cachedProfile
 }

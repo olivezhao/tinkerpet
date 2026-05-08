@@ -9,14 +9,29 @@ import { applyGrowthForEvent } from "../growth/growthEngine"
 import {
   appendEventLog as persistEventLogItem,
   clearEventLog,
-  loadEventLog
+  loadEventLog,
+  resetEventLogStore
 } from "../store/eventLogStore"
-import { loadTodayStats } from "../store/dailyStatsStore"
-import { loadProfile, updatePetName } from "../store/profileStore"
-import { loadSources, toPublicSource } from "../store/sourceStore"
+import { loadTodayStats, resetDailyStatsStore } from "../store/dailyStatsStore"
+import {
+  loadProfile,
+  resetProfile,
+  updatePetName,
+  updateProfilePersonality,
+  updateProfileSkin
+} from "../store/profileStore"
+import { loadSources, resetSources, toPublicSource } from "../store/sourceStore"
 import { IPC_CHANNELS } from "./channels"
 import { generateDailyReportSummary } from "../report/dailyReportGenerator"
 import { generateShareCard } from "../share/shareCardGenerator"
+import {
+  loadDecorState,
+  resetDecorState,
+  updateDecorSelection
+} from "../store/decorStore"
+import type { DecorSlot } from "../../shared/decor"
+import { generateSevenDayStats } from "../stats/sevenDayStats"
+import { resetGrowthState } from "../store/growthStore"
 
 interface IpcHandlerOptions {
   getDebugWindow: () => BrowserWindow | null
@@ -197,6 +212,34 @@ function getSnapshot(): DebugSnapshot {
   }
 }
 
+function broadcastProfile(options: IpcHandlerOptions): void {
+  const profile = loadProfile()
+  const petWindow = options.getPetWindow()
+  const debugWindow = options.getDebugWindow()
+
+  if (petWindow && !petWindow.isDestroyed()) {
+    petWindow.webContents.send(IPC_CHANNELS.PROFILE_UPDATED, profile)
+  }
+
+  if (debugWindow && !debugWindow.isDestroyed()) {
+    debugWindow.webContents.send(IPC_CHANNELS.PROFILE_UPDATED, profile)
+  }
+}
+
+function broadcastDecor(options: IpcHandlerOptions): void {
+  const decorState = loadDecorState()
+  const petWindow = options.getPetWindow()
+  const debugWindow = options.getDebugWindow()
+
+  if (petWindow && !petWindow.isDestroyed()) {
+    petWindow.webContents.send(IPC_CHANNELS.DECOR_UPDATED, decorState)
+  }
+
+  if (debugWindow && !debugWindow.isDestroyed()) {
+    debugWindow.webContents.send(IPC_CHANNELS.DECOR_UPDATED, decorState)
+  }
+}
+
 export function broadcastSnapshot(options: IpcHandlerOptions): void {
   const debugWindow = options.getDebugWindow()
 
@@ -261,6 +304,7 @@ export function dispatchPetEventWithResult(
   applyGrowthForEvent(normalizedEvent)
   petWindow.webContents.send(IPC_CHANNELS.PET_EVENT, normalizedEvent)
   broadcastSnapshot(options)
+  broadcastDecor(options)
   scheduleTransientResolution(options, currentState)
 
   return {
@@ -288,16 +332,76 @@ export function registerIpcHandlers(options: IpcHandlerOptions): void {
     return getSnapshot()
   })
 
+  ipcMain.handle(IPC_CHANNELS.DEBUG_LOCAL_DATA_CLEAR, () => {
+    resetEventLogStore()
+    resetDailyStatsStore()
+    resetDecorState()
+    resetGrowthState()
+    resetSources()
+    resetProfile()
+
+    eventLog = loadEventLog()
+    activeTaskCount = 0
+    currentState = "idle"
+    eventSequence = 0
+    processedEventKeys.clear()
+    dedupKeySeenAt.clear()
+    clearIdleTimer()
+    clearTransientTimer()
+
+    broadcastSnapshot(options)
+    broadcastProfile(options)
+    broadcastDecor(options)
+    return getSnapshot()
+  })
+
   ipcMain.handle(IPC_CHANNELS.DEBUG_SNAPSHOT_GET, () => getSnapshot())
+
+  ipcMain.handle(IPC_CHANNELS.DECOR_GET, () => loadDecorState())
+
+  ipcMain.handle(
+    IPC_CHANNELS.DECOR_UPDATE_SELECTION,
+    (_event, slot: DecorSlot, itemId: string) => {
+      const decorState = updateDecorSelection(slot, itemId)
+      broadcastDecor(options)
+      return decorState
+    }
+  )
 
   ipcMain.handle(IPC_CHANNELS.PROFILE_GET, () => loadProfile())
 
   ipcMain.handle(
     IPC_CHANNELS.PROFILE_UPDATE_NAME,
-    (_event, petName: string) => updatePetName(petName)
+    (_event, petName: string) => {
+      const profile = updatePetName(petName)
+      broadcastSnapshot(options)
+      broadcastProfile(options)
+      return profile
+    }
+  )
+
+  ipcMain.handle(
+    IPC_CHANNELS.PROFILE_UPDATE_PERSONALITY,
+    (_event, personality: string) => {
+      const profile = updateProfilePersonality(personality)
+      broadcastSnapshot(options)
+      broadcastProfile(options)
+      return profile
+    }
+  )
+
+  ipcMain.handle(
+    IPC_CHANNELS.PROFILE_UPDATE_SKIN,
+    (_event, skinId: string) => {
+      const profile = updateProfileSkin(skinId)
+      broadcastSnapshot(options)
+      broadcastProfile(options)
+      return profile
+    }
   )
 
   ipcMain.handle(IPC_CHANNELS.REPORT_GET, () => generateDailyReportSummary())
+  ipcMain.handle(IPC_CHANNELS.STATS_SEVEN_DAYS_GET, () => generateSevenDayStats())
 
   ipcMain.handle(IPC_CHANNELS.SHARE_CARD_GENERATE, () => {
     const report = generateDailyReportSummary()

@@ -22,6 +22,8 @@ function getShareCardDirectory(): string {
 function createShareCardSvg(report: DailyReportSummary): string {
   const summary = escapeXml(report.summaryText)
   const petName = escapeXml(report.petName)
+  const personality = escapeXml(report.personality)
+  const skinId = escapeXml(report.skinId)
   const topSource = escapeXml(report.topSource)
 
   return `
@@ -38,17 +40,30 @@ function createShareCardSvg(report: DailyReportSummary): string {
   <text x="86" y="116" fill="#93c5fd" font-size="24" font-family="Inter, Arial, sans-serif" font-weight="700">TinkerPet Daily Report</text>
   <text x="86" y="176" fill="#f8fafc" font-size="54" font-family="Inter, Arial, sans-serif" font-weight="800">${petName}</text>
   <text x="86" y="218" fill="#cbd5e1" font-size="24" font-family="Inter, Arial, sans-serif">Date ${report.date}</text>
+  <text x="86" y="250" fill="#cbd5e1" font-size="20" font-family="Inter, Arial, sans-serif">Skin ${skinId} · Personality ${personality}</text>
 
-  <text x="86" y="292" fill="#e2e8f0" font-size="30" font-family="Inter, Arial, sans-serif" font-weight="700">Today XP ${report.todayXp}</text>
-  <text x="86" y="332" fill="#e2e8f0" font-size="30" font-family="Inter, Arial, sans-serif" font-weight="700">Level ${report.level}</text>
-  <text x="86" y="372" fill="#e2e8f0" font-size="30" font-family="Inter, Arial, sans-serif" font-weight="700">Completed ${report.completedCount}</text>
-  <text x="86" y="412" fill="#e2e8f0" font-size="30" font-family="Inter, Arial, sans-serif" font-weight="700">Wait Minutes ${report.totalWaitMinutes}</text>
-  <text x="86" y="452" fill="#e2e8f0" font-size="30" font-family="Inter, Arial, sans-serif" font-weight="700">Top Source ${topSource}</text>
+  <text x="86" y="304" fill="#e2e8f0" font-size="30" font-family="Inter, Arial, sans-serif" font-weight="700">Today XP ${report.todayXp}</text>
+  <text x="86" y="344" fill="#e2e8f0" font-size="30" font-family="Inter, Arial, sans-serif" font-weight="700">Level ${report.level}</text>
+  <text x="86" y="384" fill="#e2e8f0" font-size="30" font-family="Inter, Arial, sans-serif" font-weight="700">Completed ${report.completedCount}</text>
+  <text x="86" y="424" fill="#e2e8f0" font-size="30" font-family="Inter, Arial, sans-serif" font-weight="700">Wait Minutes ${report.totalWaitMinutes}</text>
+  <text x="86" y="464" fill="#e2e8f0" font-size="30" font-family="Inter, Arial, sans-serif" font-weight="700">Top Source ${topSource}</text>
 
   <text x="86" y="520" fill="#cbd5e1" font-size="22" font-family="Inter, Arial, sans-serif">${summary}</text>
   <text x="86" y="562" fill="#94a3b8" font-size="20" font-family="Inter, Arial, sans-serif">Generated ${new Date(
     report.generatedAt
   ).toLocaleString()}</text>
+</svg>
+`.trim()
+}
+
+function createFallbackSvg(report: DailyReportSummary): string {
+  const petName = escapeXml(report.petName)
+  return `
+<svg xmlns="http://www.w3.org/2000/svg" width="${SHARE_CARD_WIDTH}" height="${SHARE_CARD_HEIGHT}">
+  <rect width="100%" height="100%" fill="#111827" />
+  <text x="80" y="180" fill="#f8fafc" font-size="52" font-family="Arial, sans-serif" font-weight="700">${petName}</text>
+  <text x="80" y="250" fill="#cbd5e1" font-size="30" font-family="Arial, sans-serif">TinkerPet share card fallback</text>
+  <text x="80" y="320" fill="#93c5fd" font-size="26" font-family="Arial, sans-serif">Today XP ${report.todayXp} · Level ${report.level}</text>
 </svg>
 `.trim()
 }
@@ -110,6 +125,31 @@ async function renderPngWithOffscreenWindow(svg: string): Promise<Buffer> {
   }
 }
 
+function isNonBlankPngBuffer(buffer: Buffer): boolean {
+  if (!buffer || buffer.length === 0) {
+    return false
+  }
+
+  const image = nativeImage.createFromBuffer(buffer)
+  if (image.isEmpty()) {
+    return false
+  }
+
+  const bitmap = image.toBitmap()
+  if (bitmap.length === 0) {
+    return false
+  }
+
+  for (let index = 0; index < bitmap.length; index += 4) {
+    const alpha = bitmap[index + 3]
+    if (alpha > 0) {
+      return true
+    }
+  }
+
+  return false
+}
+
 export async function generateShareCard(
   report: DailyReportSummary
 ): Promise<ShareCardResult> {
@@ -119,8 +159,21 @@ export async function generateShareCard(
   )
   let pngBuffer = image.toPNG()
 
-  if (image.isEmpty() || pngBuffer.length === 0) {
+  if (image.isEmpty() || !isNonBlankPngBuffer(pngBuffer)) {
     pngBuffer = await renderPngWithOffscreenWindow(svg)
+  }
+
+  if (!isNonBlankPngBuffer(pngBuffer)) {
+    const fallbackSvg = createFallbackSvg(report)
+    const fallbackImage = nativeImage.createFromDataURL(
+      `data:image/svg+xml;charset=utf-8,${encodeURIComponent(fallbackSvg)}`
+    )
+    pngBuffer = fallbackImage.toPNG()
+  }
+
+  if (!isNonBlankPngBuffer(pngBuffer)) {
+    const fallbackSvg = createFallbackSvg(report)
+    pngBuffer = await renderPngWithOffscreenWindow(fallbackSvg)
   }
 
   const directory = getShareCardDirectory()

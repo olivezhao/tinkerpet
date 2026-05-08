@@ -16,6 +16,7 @@ import {
   isSourceTokenValid,
   loadSources,
   registerSource,
+  SOURCE_HEARTBEAT_TIMEOUT_MS,
   toPublicSource
 } from "../store/sourceStore"
 
@@ -180,6 +181,7 @@ function handleHealthRequest(
   sendJson(response, 200, {
     app: "TinkerPet",
     bridgePort: options.getBridgePort(),
+    heartbeatTimeoutMs: SOURCE_HEARTBEAT_TIMEOUT_MS,
     ok: true,
     sources: loadSources().map(toPublicSource),
     status: "ok",
@@ -235,6 +237,7 @@ function isProvider(value: unknown): value is EventProvider | undefined {
     value === "chatgpt" ||
     value === "claude" ||
     value === "cursor" ||
+    value === "deepseek" ||
     value === "gemini" ||
     value === "pet-run" ||
     value === "vscode"
@@ -246,6 +249,7 @@ function canPublicRegisterSource(body: Record<string, unknown>): boolean {
     body.sourceType === "browser" &&
     (body.provider === "chatgpt" ||
       body.provider === "claude" ||
+      body.provider === "deepseek" ||
       body.provider === "gemini")
   )
 }

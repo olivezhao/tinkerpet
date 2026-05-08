@@ -23,6 +23,7 @@ const VALID_PROVIDERS = new Set<EventProvider>([
   "chatgpt",
   "claude",
   "cursor",
+  "deepseek",
   "gemini",
   "pet-run",
   "vscode"

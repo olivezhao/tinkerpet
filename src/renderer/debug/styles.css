@@ -35,6 +35,19 @@ input {
   width: 100%;
 }
 
+select {
+  background: #fff;
+  border: 2px solid #202124;
+  border-radius: 8px;
+  box-sizing: border-box;
+  color: #202124;
+  font: inherit;
+  min-height: 42px;
+  min-width: 0;
+  padding: 9px 11px;
+  width: 100%;
+}
+
 button:disabled {
   cursor: not-allowed;
   opacity: 0.55;
@@ -47,6 +60,25 @@ button:disabled {
   gap: 14px;
   min-height: 100vh;
   padding: 22px;
+}
+
+.settings-tabs {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.tab {
+  background: #edf4ff;
+  border: 2px solid #202124;
+  color: #202124;
+  min-height: 36px;
+  padding: 6px 8px;
+}
+
+.tab.active {
+  background: #202124;
+  color: #fff;
 }
 
 .eyebrow {
@@ -113,6 +145,16 @@ label {
   display: flex;
   font-size: 12px;
   justify-content: space-between;
+}
+
+.decor-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.decor-row {
+  display: grid;
+  gap: 6px;
 }
 
 .form-error,
@@ -216,11 +258,13 @@ label {
   text-transform: uppercase;
 }
 
-.source-status-connected {
+.source-status-connected,
+.source-status-online {
   background: #137333;
 }
 
-.source-status-stale {
+.source-status-stale,
+.source-status-offline {
   background: #b3261e;
 }
 
