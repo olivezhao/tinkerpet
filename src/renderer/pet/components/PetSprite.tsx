@@ -1,6 +1,7 @@
 import React from "react"
 import type { DecorSelection, PetState } from "../../../shared/types"
-import { resolveAnimationForState } from "../animationManifest"
+import type { MotionId } from "../../../shared/motionPresets"
+import { resolveAnimationForMotionId } from "../animationManifest"
 import type { ExpressionPreset } from "../expressionManifest"
 import { resolveSkinTheme } from "../skinManifest"
 import robotSprite from "../assets/prototype/tinker-front.png"
@@ -9,7 +10,7 @@ import { ThreePetCanvas } from "./ThreePetCanvas"
 interface PetSpriteProps {
   decorSelection: DecorSelection
   expression: ExpressionPreset
-  motionVariant: number
+  motionId: MotionId
   skinId: string
   state: PetState
 }
@@ -30,11 +31,11 @@ function resolveInitialRenderMode(): "2d" | "3d" {
 export function PetSprite({
   decorSelection,
   expression,
-  motionVariant,
+  motionId,
   skinId,
   state
 }: PetSpriteProps): React.ReactElement {
-  const animation = resolveAnimationForState(state, motionVariant)
+  const animation = resolveAnimationForMotionId(motionId)
   const theme = resolveSkinTheme(skinId)
   const [renderMode, setRenderMode] = React.useState<"2d" | "3d">(resolveInitialRenderMode)
 
@@ -81,6 +82,7 @@ export function PetSprite({
           <ThreePetCanvas
             animationName={animation.name}
             expression={expression}
+            motionId={motionId}
             onInitError={() => setRenderMode("2d")}
             skin={theme}
           />

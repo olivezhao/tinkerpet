@@ -1,26 +1,46 @@
 # TinkerPet
 
-A tiny robot desktop pet that keeps you company while AI gets things done.
+TinkerPet is a macOS desktop companion robot for AI waiting moments.
 
-TinkerPet is a macOS desktop companion prototype for AI waiting moments. It lives as a small transparent pet window, reacts to workflow events, and provides a local Debug Panel for manually testing state changes.
+It stays on your desktop, listens to AI/workflow progress, reacts with expressive robot motions, and helps convert fragmented waiting time into lightweight, playful interaction.
 
-## V0.1 Features
+## Robot Design Preview
 
-- Transparent frameless desktop pet window.
-- macOS menu bar entry for show, hide, reset position, and quit.
-- Debug Panel for manual event triggering and event log inspection.
-- Local HTTP event bridge at `http://127.0.0.1:17321/events`.
-- Persistent local config and recent event log.
-- CSS-based placeholder robot pet animations.
+![TinkerPet Robot Design](src/renderer/pet/assets/prototype/robot-main.png)
 
-## Development
+## Current Scope (V0.1 -> V0.6)
+
+- Desktop pet window (transparent, frameless, always-on-top configurable).
+- Menu bar tray controls: show/hide, reset position, settings/debug/report/quick-play.
+- Local event bridge (`/events`) for AI and workflow status events.
+- Quick Play (Gomoku) side game with local AI difficulty modes and match history.
+- Growth loop: XP, level, decor points, personality feedback, daily report, share card.
+- 3D robot rendering (`.glb`) with motion scheduler (idle/waiting/finished/failed/sleeping).
+- V0.6 motion upgrades:
+  - idle walk + occasional jog burst
+  - waiting showcase pool
+  - finish notification effect (paper-plane/envelope)
+  - anti-fatigue rhythm controls
+
+## Tech Stack
+
+- Electron + React + TypeScript
+- Vite / electron-vite
+- Three.js (3D robot rendering)
+- Local JSON stores in app data directory
+
+## Quick Start
 
 ```sh
 npm install
 npm run dev
 ```
 
-After launch, click the `TinkerPet` item in the macOS menu bar to open the menu or Debug Panel.
+After launch, use the `TinkerPet` item in the macOS menu bar to open:
+- Settings
+- Debug Panel
+- Daily Report
+- Quick Play
 
 ## Verification
 
@@ -32,10 +52,16 @@ npm run build
 
 ## Local Event Bridge
 
-The bridge accepts authenticated events using the bearer token stored in the local app config:
+The bridge uses bearer token auth. Token and port are stored in:
 
 ```sh
 ~/Library/Application Support/tinkerpet/tinkerpet-config.json
+```
+
+Default endpoint:
+
+```txt
+http://127.0.0.1:17321/events
 ```
 
 Example payload:

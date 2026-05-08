@@ -1,9 +1,24 @@
 import type { PetState } from "../../shared/types"
+import type { MotionId } from "../../shared/motionPresets"
 
 export interface AnimationConfig {
   durationMs: number
   loop: boolean
   name: string
+}
+
+const MOTION_TO_ANIMATION: Record<MotionId, AnimationConfig> = {
+  "failed-reset": { durationMs: 1700, loop: false, name: "fail-reboot" },
+  "finished-signal": { durationMs: 1500, loop: false, name: "success-spark" },
+  "interaction-nod": { durationMs: 1200, loop: false, name: "idle-scan" },
+  "interaction-wave": { durationMs: 1300, loop: false, name: "success-pump" },
+  "jog-burst": { durationMs: 3000, loop: false, name: "working-tinker" },
+  "showcase-a": { durationMs: 4200, loop: false, name: "working-tinker" },
+  "showcase-b": { durationMs: 4600, loop: false, name: "thinking-tick" },
+  "showcase-c": { durationMs: 3800, loop: false, name: "success-pump" },
+  "showcase-d": { durationMs: 5000, loop: false, name: "idle-scan" },
+  "sleep-slow": { durationMs: 3800, loop: true, name: "sleep-powerdown" },
+  "walk-loop": { durationMs: 3200, loop: true, name: "idle-breathe" }
 }
 
 const REQUIRED_V02_ANIMATIONS = new Set([
@@ -96,4 +111,8 @@ export function runAnimationManifestSelfCheck(): boolean {
   return Array.from(REQUIRED_V02_ANIMATIONS).every((name) =>
     animationNames.has(name)
   )
+}
+
+export function resolveAnimationForMotionId(motionId: MotionId): AnimationConfig {
+  return MOTION_TO_ANIMATION[motionId] ?? MOTION_TO_ANIMATION["walk-loop"]
 }
