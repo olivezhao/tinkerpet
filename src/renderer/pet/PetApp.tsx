@@ -9,8 +9,10 @@ import {
   type PetMachineState
 } from "./petStateMachine"
 import { runAnimationManifestSelfCheck } from "./animationManifest"
+import { runAssetManifestSelfCheck } from "./assetManifestValidator"
 import { PetSprite } from "./components/PetSprite"
 import { StatusBubble } from "./components/StatusBubble"
+import { resolveExpressionPreset } from "./expressionManifest"
 import {
   resolveBubbleTextByEvent,
   resolveBubbleTextByState,
@@ -18,13 +20,16 @@ import {
 } from "../../shared/personality"
 
 const SELF_CHECK_PASSED =
-  runPetStateMachineSelfCheck() && runAnimationManifestSelfCheck()
+  runPetStateMachineSelfCheck() &&
+  runAnimationManifestSelfCheck() &&
+  runAssetManifestSelfCheck()
 
 export function PetApp(): React.ReactElement {
   const [machineState, setMachineState] = React.useState<PetMachineState>(
     INITIAL_PET_MACHINE_STATE
   )
   const [skinId, setSkinId] = React.useState("default-bot")
+  const [motionVariant, setMotionVariant] = React.useState(0)
   const [personality, setPersonality] = React.useState<PetPersonality>("encourage")
   const [bubbleText, setBubbleText] = React.useState("我在这，随时开工。")
   const [decorState, setDecorState] = React.useState<DecorState>({
@@ -37,6 +42,10 @@ export function PetApp(): React.ReactElement {
     unlockedItemIds: [],
     updatedAt: 0
   })
+  const expression = React.useMemo(
+    () => resolveExpressionPreset(personality, machineState.state),
+    [personality, machineState.state]
+  )
 
   React.useEffect(() => {
     let active = true
@@ -101,6 +110,10 @@ export function PetApp(): React.ReactElement {
   }, [machineState.state, personality])
 
   React.useEffect(() => {
+    setMotionVariant((current) => current + 1)
+  }, [machineState.state])
+
+  React.useEffect(() => {
     if (machineState.state !== "finished" && machineState.state !== "failed") {
       return undefined
     }
@@ -125,7 +138,12 @@ export function PetApp(): React.ReactElement {
     return () => window.clearTimeout(timeout)
   }, [machineState.state])
 
-  function handlePetClick(): void {
+  function handlePetClick(event: React.MouseEvent<HTMLElement>): void {
+    const target = event.target
+    if (target instanceof HTMLCanvasElement) {
+      return
+    }
+
     setMachineState((current) =>
       transitionPetState(current, {
         type:
@@ -146,6 +164,8 @@ export function PetApp(): React.ReactElement {
     >
       <PetSprite
         decorSelection={decorState.selected}
+        expression={expression}
+        motionVariant={motionVariant}
         skinId={skinId}
         state={machineState.state}
       />

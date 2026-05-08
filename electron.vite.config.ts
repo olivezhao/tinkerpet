@@ -28,6 +28,7 @@ export default defineConfig({
     }
   },
   renderer: {
+    assetsInclude: ["**/*.glb", "**/*.gltf"],
     server: {
       host: "127.0.0.1",
       port: 5173,
