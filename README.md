@@ -20,8 +20,9 @@ TinkerPet 旨在把这段等待从“空转焦虑”变成“轻量陪伴 + 明�
 
 ### 机器人效果图
 
-![TinkerPet Robot](src/renderer/pet/assets/prototype/tinker-front.png)
-![TinkerPet Robot Pose](src/renderer/pet/assets/prototype/robot-main-focused.png)
+![TinkerPet Runtime Robot](docs/images/robot-runtime.png)
+
+> 上图为当前开发版本在本地运行时自动截取的机器人效果（非早期概念图）。
 
 ### 核心能力（当前版本）
 
@@ -66,6 +67,10 @@ TinkerPet turns those waiting moments into a lightweight loop of companionship, 
 
 - Runtime asset: `src/renderer/pet/assets3d/models/robot.glb`
 - Source page: [Sketchfab Robot](https://sketchfab.com/3d-models/robot-80a736ddac1044299b134cfcca87c7f9)
+
+Runtime preview image:
+
+![TinkerPet Runtime Robot](docs/images/robot-runtime.png)
 
 ---
 
