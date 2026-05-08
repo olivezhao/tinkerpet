@@ -1,0 +1,146 @@
+:root {
+  color: #1b1f2a;
+  font-family: "Inter", "SF Pro Display", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: #f3f4f6;
+  margin: 0;
+}
+
+.quick-play-shell {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr);
+  margin: 0 auto;
+  max-width: 980px;
+  padding: 20px;
+}
+
+.quick-play-header {
+  align-items: end;
+  display: flex;
+  justify-content: space-between;
+}
+
+.quick-play-eyebrow {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 40px;
+  line-height: 1.1;
+}
+
+.quick-play-actions {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+select,
+button {
+  border: 3px solid #1f2430;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  min-height: 48px;
+  padding: 0 14px;
+}
+
+button {
+  background: #1f2430;
+  color: #fff;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.quick-play-board-panel,
+.quick-play-history {
+  background: #fff;
+  border: 3px solid #1f2430;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.quick-play-status,
+.quick-play-feedback,
+.muted {
+  color: #5b616d;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.gomoku-board {
+  aspect-ratio: 1 / 1;
+  display: grid;
+  gap: 2px;
+  grid-template-columns: repeat(15, minmax(0, 1fr));
+  margin: 0 auto;
+  max-width: 640px;
+}
+
+.gomoku-cell {
+  align-items: center;
+  background: #e5c793;
+  border: 1px solid rgba(31, 36, 48, 0.45);
+  border-radius: 2px;
+  display: flex;
+  justify-content: center;
+  min-height: 0;
+  min-width: 0;
+  padding: 0;
+}
+
+.gomoku-cell:disabled {
+  opacity: 1;
+}
+
+.stone {
+  border-radius: 50%;
+  display: block;
+  height: 78%;
+  width: 78%;
+}
+
+.stone.player {
+  background: radial-gradient(circle at 30% 30%, #ffffff, #111 70%);
+}
+
+.stone.tinker {
+  background: radial-gradient(circle at 30% 30%, #f0f6ff, #4f6ba8 70%);
+}
+
+.quick-play-history ul {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.quick-play-history li {
+  background: #eef2ff;
+  border-radius: 10px;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 10px 12px;
+}

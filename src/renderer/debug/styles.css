@@ -69,16 +69,28 @@ button:disabled {
 }
 
 .tab {
+  align-items: center;
   background: #edf4ff;
   border: 2px solid #202124;
   color: #202124;
-  min-height: 36px;
-  padding: 6px 8px;
+  display: flex;
+  justify-content: center;
+  min-height: 72px;
+  overflow-wrap: anywhere;
+  padding: 8px 10px;
+  text-align: center;
+  white-space: normal;
 }
 
 .tab.active {
   background: #202124;
   color: #fff;
+}
+
+@media (max-width: 880px) {
+  .settings-tabs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .eyebrow {
@@ -145,6 +157,51 @@ label {
   display: flex;
   font-size: 12px;
   justify-content: space-between;
+}
+
+.profile-shortcuts {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.appearance-preview {
+  align-items: center;
+  background: #edf4ff;
+  border: 2px solid #202124;
+  border-radius: 8px;
+  display: grid;
+  gap: 4px;
+  min-height: 74px;
+  padding: 10px 12px;
+}
+
+.appearance-preview strong {
+  font-size: 13px;
+}
+
+.appearance-preview span {
+  color: #5f6368;
+  font-size: 12px;
+}
+
+.appearance-preview .status-applied,
+.appearance-preview .status-pending {
+  border-radius: 999px;
+  color: #fff;
+  display: inline-flex;
+  font-size: 11px;
+  font-weight: 800;
+  justify-self: start;
+  padding: 2px 8px;
+  text-transform: uppercase;
+}
+
+.appearance-preview .status-applied {
+  background: #137333;
+}
+
+.appearance-preview .status-pending {
+  background: #b26a00;
 }
 
 .decor-grid {

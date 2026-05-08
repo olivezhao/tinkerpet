@@ -1,0 +1,20 @@
+{
+  "version": "v0.4-d0.1",
+  "requiredStates": {
+    "idle": ["idle-breathe", "idle-scan"],
+    "waiting": ["working-tinker", "thinking-tick"],
+    "finished": ["success-spark", "success-pump"],
+    "failed": ["fail-reboot"],
+    "sleeping": ["sleep-powerdown"]
+  },
+  "timing": {
+    "idle-breathe": 2400,
+    "idle-scan": 2600,
+    "working-tinker": 1300,
+    "thinking-tick": 1500,
+    "success-spark": 1000,
+    "success-pump": 900,
+    "fail-reboot": 1100,
+    "sleep-powerdown": 3600
+  }
+}

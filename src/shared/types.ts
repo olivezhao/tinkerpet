@@ -64,7 +64,7 @@ export interface DailyReportSummary {
   generatedAt: number
   level: number
   petName: string
-  personality: PetPersonality
+  personality: string
   skinId: string
   startedCount: number
   summaryText: string

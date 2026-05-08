@@ -1,0 +1,21 @@
+{
+  "version": "v0.4-d0.1",
+  "defaultSkinId": "default-bot",
+  "skins": [
+    {
+      "id": "default-bot",
+      "displayName": "Classic Tinker",
+      "style": "teal-core"
+    },
+    {
+      "id": "workshop-bot",
+      "displayName": "Workshop Tinker",
+      "style": "orange-tools"
+    },
+    {
+      "id": "night-bot",
+      "displayName": "Night Tinker",
+      "style": "blue-neon"
+    }
+  ]
+}

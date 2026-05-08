@@ -1,0 +1,9 @@
+{
+  "version": "v0.4-d0.1",
+  "layers": ["eyes", "mouth", "head"],
+  "presets": {
+    "encourage": ["eyes-bright", "mouth-smile", "head-nod"],
+    "tease": ["eyes-tilt", "mouth-smirk", "head-tilt"],
+    "calm": ["eyes-focused", "mouth-line", "head-still"]
+  }
+}

@@ -16,6 +16,7 @@ export default defineConfig({
         input: {
           dataPanelPreload: "src/preload/dataPanelPreload.ts",
           debugPreload: "src/preload/debugPreload.ts",
+          gamePreload: "src/preload/gamePreload.ts",
           petPreload: "src/preload/petPreload.ts",
           reportPreload: "src/preload/reportPreload.ts"
         },
@@ -40,6 +41,7 @@ export default defineConfig({
           dataPanel: resolve("src/renderer/data-panel.html"),
           debug: resolve("src/renderer/debug.html"),
           pet: resolve("src/renderer/index.html"),
+          quickPlay: resolve("src/renderer/quick-play.html"),
           report: resolve("src/renderer/report.html")
         }
       }

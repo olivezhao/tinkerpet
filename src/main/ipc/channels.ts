@@ -1,4 +1,5 @@
 export const IPC_CHANNELS = {
+  APP_OPEN_QUICK_PLAY: "app:open-quick-play",
   DEBUG_EVENT_LOG_CLEAR: "debug:event-log-clear",
   DEBUG_LOCAL_DATA_CLEAR: "debug:local-data-clear",
   DEBUG_EVENT_SEND: "debug:event-send",
@@ -12,6 +13,12 @@ export const IPC_CHANNELS = {
   PROFILE_UPDATE_NAME: "profile:update-name",
   PROFILE_UPDATE_PERSONALITY: "profile:update-personality",
   PROFILE_UPDATE_SKIN: "profile:update-skin",
+  GAME_NEW: "game:new",
+  GAME_MOVE: "game:move",
+  GAME_AI_MOVE: "game:ai-move",
+  GAME_FINISH: "game:finish",
+  GAME_HISTORY_GET: "game:history:get",
+  GAME_DIFFICULTY_SET: "game:difficulty:set",
   PET_EVENT: "pet:event",
   STATS_SEVEN_DAYS_GET: "stats:seven-days:get",
   REPORT_GET: "report:get",
