@@ -1,6 +1,6 @@
 import React from "react"
 import type { PetPersonality, PetProfile } from "../../../shared/types"
-import { AVAILABLE_SKIN_IDS } from "../../../shared/skins"
+import { AVAILABLE_SKIN_IDS, SKIN_META, type SkinId } from "../../../shared/skins"
 
 const MAX_PET_NAME_LENGTH = 20
 
@@ -23,6 +23,9 @@ export function ProfileSettings({
   const [error, setError] = React.useState<string | null>(null)
   const [isSaving, setIsSaving] = React.useState(false)
   const [savedMessage, setSavedMessage] = React.useState<string | null>(null)
+  const selectedSkinMeta = SKIN_META[draftSkinId as SkinId] ?? SKIN_META["default-bot"]
+  const appliedSkinId = profile?.skinId ?? "default-bot"
+  const hasPendingSkinChange = mode === "appearance" && draftSkinId !== appliedSkinId
 
   React.useEffect(() => {
     setDraftName(profile?.petName ?? "")
@@ -136,11 +139,23 @@ export function ProfileSettings({
           </div>
           {error ? <p className="form-error">{error}</p> : null}
           {savedMessage ? <p className="form-success">{savedMessage}</p> : null}
+          <div className="profile-shortcuts">
+            <button onClick={() => void window.tinkerpetDebug.openQuickPlay()} type="button">
+              Open Quick Play
+            </button>
+          </div>
         </form>
       ) : null}
 
       {mode === "appearance" ? (
         <form className="profile-form" onSubmit={(event) => void saveSkin(event)}>
+          <div className="appearance-preview" aria-live="polite">
+            <strong>{selectedSkinMeta.label}</strong>
+            <span>{selectedSkinMeta.tone}</span>
+            <span className={hasPendingSkinChange ? "status-pending" : "status-applied"}>
+              {hasPendingSkinChange ? "Pending apply" : "Applied"}
+            </span>
+          </div>
           <label htmlFor="pet-skin">Pet skin</label>
           <div className="profile-form-row">
             <select
@@ -154,7 +169,7 @@ export function ProfileSettings({
             >
               {AVAILABLE_SKIN_IDS.map((skinId) => (
                 <option key={skinId} value={skinId}>
-                  {skinId}
+                  {SKIN_META[skinId].label}
                 </option>
               ))}
             </select>
@@ -163,7 +178,12 @@ export function ProfileSettings({
             </button>
           </div>
           <div className="profile-meta-row">
-            {profile ? <span>Current: {profile.skinId}</span> : null}
+            {profile ? (
+              <span>
+                Current: {(SKIN_META[profile.skinId as SkinId] ?? SKIN_META["default-bot"]).label}
+              </span>
+            ) : null}
+            <span>{hasPendingSkinChange ? "Ready to apply" : "Synced"}</span>
           </div>
           {error ? <p className="form-error">{error}</p> : null}
           {savedMessage ? <p className="form-success">{savedMessage}</p> : null}

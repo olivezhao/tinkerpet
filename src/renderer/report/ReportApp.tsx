@@ -154,6 +154,13 @@ export function ReportApp(): React.ReactElement {
       </section>
 
       <section className="panel">
+        <h2>Pet Identity</h2>
+        <p>
+          Skin: {report.skinId} · Personality: {report.personality}
+        </p>
+      </section>
+
+      <section className="panel">
         <h2>Top Source</h2>
         <p>{report.topSource}</p>
       </section>

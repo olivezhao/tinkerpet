@@ -14,6 +14,7 @@ const PROFILE_UPDATED_CHANNEL = "profile:updated"
 const PROFILE_UPDATE_NAME_CHANNEL = "profile:update-name"
 const PROFILE_UPDATE_PERSONALITY_CHANNEL = "profile:update-personality"
 const PROFILE_UPDATE_SKIN_CHANNEL = "profile:update-skin"
+const APP_OPEN_QUICK_PLAY_CHANNEL = "app:open-quick-play"
 
 contextBridge.exposeInMainWorld("tinkerpetDebug", {
   clearEventLog: (): Promise<DebugSnapshot> =>
@@ -74,6 +75,7 @@ contextBridge.exposeInMainWorld("tinkerpetDebug", {
     ipcRenderer.invoke(PROFILE_UPDATE_PERSONALITY_CHANNEL, personality),
   updateProfileSkin: (skinId: string): Promise<PetProfile> =>
     ipcRenderer.invoke(PROFILE_UPDATE_SKIN_CHANNEL, skinId),
+  openQuickPlay: (): Promise<boolean> => ipcRenderer.invoke(APP_OPEN_QUICK_PLAY_CHANNEL),
   updateDecorSelection: (slot: string, itemId: string): Promise<DecorState> =>
     ipcRenderer.invoke(DECOR_UPDATE_SELECTION_CHANNEL, slot, itemId)
 })

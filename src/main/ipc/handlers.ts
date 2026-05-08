@@ -25,6 +25,7 @@ import { IPC_CHANNELS } from "./channels"
 import { generateDailyReportSummary } from "../report/dailyReportGenerator"
 import { generateShareCard } from "../share/shareCardGenerator"
 import {
+  addDecorPoints,
   loadDecorState,
   resetDecorState,
   updateDecorSelection
@@ -32,10 +33,19 @@ import {
 import type { DecorSlot } from "../../shared/decor"
 import { generateSevenDayStats } from "../stats/sevenDayStats"
 import { resetGrowthState } from "../store/growthStore"
+import { type GomokuDifficulty, type GomokuGameState } from "../../shared/gameTypes"
+import {
+  appendGameHistory,
+  loadGameHistory
+} from "../store/gameHistoryStore"
+import { applyGomokuMove, createGomokuGameState } from "../../shared/gomokuEngine"
+import { chooseTinkerMove } from "../../shared/gomokuAi"
+import { addProfileXp } from "../store/profileStore"
 
 interface IpcHandlerOptions {
   getDebugWindow: () => BrowserWindow | null
   getPetWindow: () => BrowserWindow | null
+  openQuickPlayWindow?: () => BrowserWindow
   showPetWindow: () => BrowserWindow
 }
 
@@ -322,6 +332,14 @@ export function dispatchPetEvent(
 }
 
 export function registerIpcHandlers(options: IpcHandlerOptions): void {
+  ipcMain.handle(IPC_CHANNELS.APP_OPEN_QUICK_PLAY, () => {
+    if (!options.openQuickPlayWindow) {
+      return false
+    }
+    options.openQuickPlayWindow().show()
+    return true
+  })
+
   ipcMain.handle(IPC_CHANNELS.DEBUG_EVENT_SEND, (_event, petEvent: PetEvent) =>
     dispatchPetEvent(options, petEvent)
   )
@@ -415,4 +433,95 @@ export function registerIpcHandlers(options: IpcHandlerOptions): void {
 
     return shell.showItemInFolder(filePath)
   })
+
+  // V0.5 task0 placeholders
+  ipcMain.handle(
+    IPC_CHANNELS.GAME_NEW,
+    (_event, difficulty: GomokuDifficulty = "normal"): GomokuGameState =>
+      createGomokuGameState(difficulty)
+  )
+
+  ipcMain.handle(
+    IPC_CHANNELS.GAME_MOVE,
+    (_event, gameState: GomokuGameState, x: number, y: number): GomokuGameState =>
+      applyGomokuMove(gameState, x, y, gameState.currentTurn)
+  )
+  ipcMain.handle(IPC_CHANNELS.GAME_AI_MOVE, (_event, gameState: GomokuGameState) => {
+    if (gameState.result !== "ongoing" || gameState.currentTurn !== 2) {
+      return gameState
+    }
+
+    const move = chooseTinkerMove(gameState, gameState.difficulty)
+    return applyGomokuMove(gameState, move.x, move.y, 2)
+  })
+  ipcMain.handle(
+    IPC_CHANNELS.GAME_FINISH,
+    (
+      _event,
+      payload: {
+        difficulty: GomokuDifficulty
+        gameState: GomokuGameState
+      }
+    ) => {
+      const { gameState } = payload
+      if (!gameState || gameState.result === "ongoing") {
+        return { ok: false }
+      }
+
+      const endedAt = Date.now()
+      const durationMs = Math.max(0, endedAt - gameState.startedAt)
+      const historyResult =
+        gameState.result === "player_win"
+          ? "win"
+          : gameState.result === "tinker_win"
+            ? "lose"
+            : "draw"
+
+      appendGameHistory({
+        difficulty: gameState.difficulty,
+        durationMs,
+        endedAt,
+        id: gameState.id,
+        result: historyResult,
+        startedAt: gameState.startedAt,
+        totalMoves: gameState.moveCount
+      })
+
+      const xpDelta =
+        historyResult === "win" ? 18 : historyResult === "draw" ? 10 : 6
+      const decorDelta =
+        historyResult === "win" ? 8 : historyResult === "draw" ? 5 : 3
+      const profile = addProfileXp(xpDelta)
+      const decor = addDecorPoints(decorDelta)
+
+      broadcastSnapshot(options)
+      broadcastProfile(options)
+      broadcastDecor(options)
+
+      return {
+        decorPoints: decor.decorPoints,
+        message:
+          profile.personality === "tease"
+            ? historyResult === "win"
+              ? "Nice move. You got me this time."
+              : "I will optimize and beat you next round."
+            : profile.personality === "calm"
+              ? historyResult === "win"
+                ? "Solid execution. Ready when you are."
+                : "Good round. Let's continue training."
+              : historyResult === "win"
+                ? "Great job! That was a clean finish."
+                : "Good game. You'll crack me next one.",
+        ok: true,
+        result: historyResult,
+        xp: profile.xp,
+        xpDelta
+      }
+    }
+  )
+  ipcMain.handle(IPC_CHANNELS.GAME_HISTORY_GET, () => loadGameHistory())
+  ipcMain.handle(
+    IPC_CHANNELS.GAME_DIFFICULTY_SET,
+    (_event, difficulty: GomokuDifficulty): GomokuDifficulty => difficulty
+  )
 }

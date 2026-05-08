@@ -11,6 +11,7 @@ interface TrayMenuOptions {
   getMousePassthrough: () => boolean
   openDataPanelWindow: () => BrowserWindow
   openDebugWindow: () => BrowserWindow
+  openQuickPlayWindow: () => BrowserWindow
   openReportWindow: () => BrowserWindow
   getPetWindow: () => BrowserWindow | null
   showPetWindow: () => BrowserWindow
@@ -64,6 +65,12 @@ function createContextMenu(options: TrayMenuOptions): Menu {
       label: "Open Debug Panel",
       click: () => {
         options.openDebugWindow().show()
+      }
+    },
+    {
+      label: "Open Quick Play",
+      click: () => {
+        options.openQuickPlayWindow().show()
       }
     },
     {

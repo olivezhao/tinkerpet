@@ -8,11 +8,13 @@ import { createDebugWindow } from "./windows/debugWindow"
 import { createPetWindow } from "./windows/petWindow"
 import { createDataPanelWindow } from "./windows/dataPanelWindow"
 import { createReportWindow } from "./windows/reportWindow"
+import { createQuickPlayWindow } from "./windows/quickPlayWindow"
 
 let petWindow: BrowserWindow | null = null
 let debugWindow: BrowserWindow | null = null
 let dataPanelWindow: BrowserWindow | null = null
 let reportWindow: BrowserWindow | null = null
+let quickPlayWindow: BrowserWindow | null = null
 let bridgeServer: Server | null = null
 
 function showPetWindow(): BrowserWindow {
@@ -103,6 +105,21 @@ function openDataPanelWindow(): BrowserWindow {
   return dataPanelWindow
 }
 
+function openQuickPlayWindow(): BrowserWindow {
+  if (quickPlayWindow && !quickPlayWindow.isDestroyed()) {
+    quickPlayWindow.show()
+    quickPlayWindow.focus()
+    return quickPlayWindow
+  }
+
+  quickPlayWindow = createQuickPlayWindow()
+  quickPlayWindow.on("closed", () => {
+    quickPlayWindow = null
+  })
+
+  return quickPlayWindow
+}
+
 void app.whenReady().then(() => {
   loadConfig()
 
@@ -114,6 +131,7 @@ void app.whenReady().then(() => {
   registerIpcHandlers({
     getDebugWindow,
     getPetWindow,
+    openQuickPlayWindow,
     showPetWindow
   })
   bridgeServer = startHttpEventBridge({
@@ -128,6 +146,7 @@ void app.whenReady().then(() => {
     getMousePassthrough: () => loadConfig().window.ignoreMouseEvents,
     openDataPanelWindow,
     openDebugWindow,
+    openQuickPlayWindow,
     openReportWindow,
     getPetWindow,
     showPetWindow

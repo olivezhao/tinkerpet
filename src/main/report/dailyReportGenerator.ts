@@ -1,5 +1,6 @@
 import type { DailyReportSummary, DailyStats } from "../../shared/types"
 import { resolveBubbleTextByState } from "../../shared/personality"
+import { SKIN_META, type SkinId } from "../../shared/skins"
 import { loadTodayStats } from "../store/dailyStatsStore"
 import { loadProfile } from "../store/profileStore"
 
@@ -54,6 +55,20 @@ function buildSummaryText(
   return `${completedCount} completed and ${failedCount} failed tasks today. Keep tinkering.`
 }
 
+function resolveSkinDisplayName(skinId: string): string {
+  return (SKIN_META[skinId as SkinId] ?? SKIN_META["default-bot"]).label
+}
+
+function resolvePersonalityDisplayName(personality: string): string {
+  if (personality === "calm") {
+    return "Calm"
+  }
+  if (personality === "tease") {
+    return "Tease"
+  }
+  return "Encourage"
+}
+
 export function generateDailyReportSummary(): DailyReportSummary {
   const profile = loadProfile()
   const stats = loadTodayStats()
@@ -67,8 +82,8 @@ export function generateDailyReportSummary(): DailyReportSummary {
     generatedAt: Date.now(),
     level: profile.level,
     petName: profile.petName,
-    personality: profile.personality,
-    skinId: profile.skinId,
+    personality: resolvePersonalityDisplayName(profile.personality),
+    skinId: resolveSkinDisplayName(profile.skinId),
     startedCount: stats.startedCount,
     summaryText: `${buildSummaryText(
       stats.completedCount,
